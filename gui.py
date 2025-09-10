@@ -12,6 +12,7 @@ from config import (
     APP_NAME, WINDOW_WIDTH, WINDOW_HEIGHT, MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT,
     CHECK_OUTCOMES
 )
+import tkinter.font as tkfont
 
 
 class MainWindow:
@@ -21,11 +22,77 @@ class MainWindow:
         self.root = tk.Tk()
         self.db = DatabaseManager()
         self.reminder_manager = ReminderManager(self.root)
-        
+        self.dark_mode = True  # Start with dark mode
+        self.setup_theme()  # Add dark mode and font styling
         self.setup_window()
         self.create_widgets()
         self.setup_reminder_system()
         self.refresh_history()
+    
+    def setup_theme(self):
+        """Set dark mode and custom font"""
+        style = ttk.Style(self.root)
+        style.theme_use('clam')
+        
+        if self.dark_mode:
+            dark_bg = "#23272e"
+            dark_fg = "#e6e6e6"
+            accent = "#4f8cff"
+            entry_bg = "#3c4043"
+            entry_fg = "#e6e6e6"
+            tab_selected = "#4f8cff"
+            tab_normal = "#2c313c"
+        else:
+            dark_bg = "#ffffff"
+            dark_fg = "#000000"
+            accent = "#0078d4"
+            entry_bg = "#ffffff"
+            entry_fg = "#000000"
+            tab_selected = "#e1ecf4"
+            tab_normal = "#f0f0f0"
+        
+        self.root.configure(bg=dark_bg)
+        style.configure('.', background=dark_bg, foreground=dark_fg, font=('Segoe UI', 11))
+        style.configure('TLabel', background=dark_bg, foreground=dark_fg)
+        style.configure('TFrame', background=dark_bg)
+        style.configure('TLabelframe', background=dark_bg, foreground=dark_fg)
+        style.configure('TLabelframe.Label', background=dark_bg, foreground=dark_fg)
+        style.configure('TButton', background=accent, foreground=dark_fg)
+        style.configure('TNotebook', background=dark_bg, borderwidth=0)
+        style.configure('TNotebook.Tab', background=tab_normal, foreground=dark_fg, padding=[12, 8])
+        style.configure('TEntry', background=entry_bg, foreground=entry_fg, insertcolor=entry_fg, 
+                       fieldbackground=entry_bg, borderwidth=1, relief='solid')
+        style.configure('TCombobox', background=entry_bg, foreground=entry_fg, selectbackground=accent, 
+                       selectforeground=dark_fg, fieldbackground=entry_bg, borderwidth=1, relief='solid')
+        style.configure('Treeview', background=entry_bg, foreground=entry_fg, fieldbackground=entry_bg)
+        style.configure('Treeview.Heading', background=tab_normal, foreground=dark_fg)
+        
+        style.map('TButton', background=[('active', accent), ('pressed', '#3465a4')])
+        style.map('TNotebook.Tab', background=[('selected', tab_selected), ('active', accent)])
+        style.map('TEntry', fieldbackground=[('readonly', entry_bg), ('focus', entry_bg)])
+        style.map('TCombobox', fieldbackground=[('readonly', entry_bg), ('focus', entry_bg)])
+        
+        default_font = tkfont.nametofont("TkDefaultFont")
+        default_font.configure(family="Segoe UI", size=11)
+        self.root.option_add("*Font", default_font)
+        
+        # Configure ScrolledText widget colors
+        if hasattr(self, 'notes_text'):
+            if self.dark_mode:
+                self.notes_text.configure(bg="#3c4043", fg="#e6e6e6", insertbackground="#e6e6e6")
+            else:
+                self.notes_text.configure(bg="#ffffff", fg="#000000", insertbackground="#000000")
+    
+    def _apply_scrolledtext_theme(self, widget):
+        """Apply theme to ScrolledText widgets recursively"""
+        if isinstance(widget, scrolledtext.ScrolledText):
+            if self.dark_mode:
+                widget.configure(bg="#3c4043", fg="#e6e6e6", insertbackground="#e6e6e6")
+            else:
+                widget.configure(bg="#ffffff", fg="#000000", insertbackground="#000000")
+        elif hasattr(widget, 'winfo_children'):
+            for child in widget.winfo_children():
+                self._apply_scrolledtext_theme(child)
     
     def setup_window(self):
         """Configure the main window"""
@@ -193,6 +260,13 @@ class MainWindow:
         ttk.Button(control_frame, text="Test Reminder", 
                   command=self.test_reminder).pack(side=tk.LEFT)
         
+        # Theme toggle
+        theme_frame = ttk.LabelFrame(main_frame, text="Appearance", padding="10")
+        theme_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        ttk.Button(theme_frame, text="Toggle Light/Dark Mode", 
+                  command=self.toggle_theme).pack(side=tk.LEFT)
+        
         # Info
         info_frame = ttk.LabelFrame(main_frame, text="Information", padding="10")
         info_frame.pack(fill=tk.X)
@@ -315,6 +389,12 @@ class MainWindow:
             notes_text.insert(1.0, values[2])
             notes_text.config(state=tk.DISABLED)
             
+            # Apply theme to this window's ScrolledText
+            if self.dark_mode:
+                notes_text.configure(bg="#3c4043", fg="#e6e6e6")
+            else:
+                notes_text.configure(bg="#ffffff", fg="#000000")
+            
             ttk.Button(frame, text="Close", command=detail_window.destroy).pack()
     
     def start_reminders(self):
@@ -334,6 +414,11 @@ class MainWindow:
     def test_reminder(self):
         """Test the reminder system"""
         self.reminder_manager.test_reminder()
+    
+    def toggle_theme(self):
+        """Toggle between light and dark mode"""
+        self.dark_mode = not self.dark_mode
+        self.setup_theme()
     
     def on_reminder_triggered(self):
         """Handle when user responds to a reminder by wanting to log a check"""
