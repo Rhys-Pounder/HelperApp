@@ -197,9 +197,9 @@ class MainWindow:
         info_frame = ttk.LabelFrame(main_frame, text="Information", padding="10")
         info_frame.pack(fill=tk.X)
         
-        info_text = ("• Reminders will appear every 2 hours when active\\n"
-                    "• You can snooze reminders for 10 minutes\\n"
-                    "• Data is stored locally in your home directory\\n"
+        info_text = ("• Reminders will appear every 2 hours when active\n"
+                    "• You can snooze reminders for 10 minutes\n"
+                    "• Data is stored locally in your home directory\n"
                     "• Use 'Test Reminder' to see how notifications work")
         
         ttk.Label(info_frame, text=info_text, justify=tk.LEFT).pack(anchor=tk.W)
