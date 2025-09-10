@@ -1,0 +1,12 @@
+services:
+  aws-log-helper:
+    build: .
+    container_name: aws-log-helper
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./data:/home/appuser/.aws_log_helper
+    network_mode: host
+    stdin_open: true
+    tty: true
