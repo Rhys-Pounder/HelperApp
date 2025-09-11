@@ -188,22 +188,31 @@ class MainWindow:
         ttk.Label(header_frame, text="Check History", 
                  font=("Arial", 16, "bold")).pack(side=tk.LEFT)
         
-        ttk.Button(header_frame, text="Refresh", 
-                  command=self.refresh_history).pack(side=tk.RIGHT)
+        # Button frame for controls
+        button_frame = ttk.Frame(header_frame)
+        button_frame.pack(side=tk.RIGHT)
+        
+        ttk.Button(button_frame, text="Delete Selected", 
+                  command=self.delete_selected_record).pack(side=tk.LEFT, padx=(0, 5))
+        
+        ttk.Button(button_frame, text="Refresh", 
+                  command=self.refresh_history).pack(side=tk.LEFT)
         
         # History list
         list_frame = ttk.LabelFrame(main_frame, text="Recent Checks", padding="5")
         list_frame.pack(fill=tk.BOTH, expand=True)
         
         # Treeview for history
-        columns = ("Date/Time", "Outcome", "Notes")
+        columns = ("ID", "Date/Time", "Outcome", "Notes")
         self.history_tree = ttk.Treeview(list_frame, columns=columns, show="headings", height=15)
         
         # Configure columns
+        self.history_tree.heading("ID", text="ID")
         self.history_tree.heading("Date/Time", text="Date/Time")
         self.history_tree.heading("Outcome", text="Outcome")
         self.history_tree.heading("Notes", text="Notes")
         
+        self.history_tree.column("ID", width=50)
         self.history_tree.column("Date/Time", width=180)
         self.history_tree.column("Outcome", width=150)
         self.history_tree.column("Notes", width=300)
@@ -351,10 +360,29 @@ class MainWindow:
                 if len(notes) > 50:
                     notes = notes[:47] + "..."
                 
-                self.history_tree.insert("", tk.END, values=(dt_str, record['outcome'], notes))
+                self.history_tree.insert("", tk.END, values=(record['id'], dt_str, record['outcome'], notes))
                 
         except Exception as e:
             messagebox.showerror("Error", f"Error loading history: {str(e)}")
+    
+    def delete_selected_record(self):
+        """Delete the selected record from history"""
+        selected_item = self.history_tree.selection()
+        if not selected_item:
+            messagebox.showwarning("Warning", "No record selected")
+            return
+        
+        item = self.history_tree.item(selected_item[0])
+        record_id = item['values'][0]
+        
+        confirm = messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this record?")
+        if confirm:
+            try:
+                self.db.delete_check_record(record_id)
+                self.refresh_history()
+                messagebox.showinfo("Success", "Record deleted successfully")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error deleting record: {str(e)}")
     
     def on_history_double_click(self, event):
         """Handle double-click on history item"""
@@ -374,10 +402,10 @@ class MainWindow:
             frame.pack(fill=tk.BOTH, expand=True)
             
             ttk.Label(frame, text="Date/Time:", font=("Arial", 10, "bold")).pack(anchor=tk.W)
-            ttk.Label(frame, text=values[0]).pack(anchor=tk.W, pady=(0, 10))
+            ttk.Label(frame, text=values[1]).pack(anchor=tk.W, pady=(0, 10))
             
             ttk.Label(frame, text="Outcome:", font=("Arial", 10, "bold")).pack(anchor=tk.W)
-            ttk.Label(frame, text=values[1]).pack(anchor=tk.W, pady=(0, 10))
+            ttk.Label(frame, text=values[2]).pack(anchor=tk.W, pady=(0, 10))
             
             ttk.Label(frame, text="Notes:", font=("Arial", 10, "bold")).pack(anchor=tk.W)
             notes_text = scrolledtext.ScrolledText(frame, height=8, wrap=tk.WORD, state=tk.DISABLED)
@@ -386,7 +414,7 @@ class MainWindow:
             # Insert full notes (we need to get this from DB)
             # For now, show what we have
             notes_text.config(state=tk.NORMAL)
-            notes_text.insert(1.0, values[2])
+            notes_text.insert(1.0, values[3])
             notes_text.config(state=tk.DISABLED)
             
             # Apply theme to this window's ScrolledText
