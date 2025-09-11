@@ -4,6 +4,7 @@ Database operations for AWS Log Checker Helper Application
 
 import sqlite3
 import datetime
+import csv
 from typing import List, Dict, Optional
 from config import DATABASE_PATH
 
@@ -107,3 +108,43 @@ class DatabaseManager:
                 ORDER BY timestamp DESC
             """, (cutoff_date,))
             return [dict(row) for row in cursor.fetchall()]
+    
+    def export_to_csv(self, filepath: str, limit: int = None) -> bool:
+        """Export check records to CSV file"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                if limit:
+                    cursor = conn.execute("""
+                        SELECT id, timestamp, outcome, notes, created_at
+                        FROM check_records
+                        ORDER BY timestamp DESC
+                        LIMIT ?
+                    """, (limit,))
+                else:
+                    cursor = conn.execute("""
+                        SELECT id, timestamp, outcome, notes, created_at
+                        FROM check_records
+                        ORDER BY timestamp DESC
+                    """)
+                
+                records = cursor.fetchall()
+                
+                with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
+                    fieldnames = ['ID', 'Timestamp', 'Outcome', 'Notes', 'Created At']
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    
+                    writer.writeheader()
+                    for record in records:
+                        writer.writerow({
+                            'ID': record['id'],
+                            'Timestamp': record['timestamp'],
+                            'Outcome': record['outcome'],
+                            'Notes': record['notes'] or '',
+                            'Created At': record['created_at']
+                        })
+                
+                return True
+        except Exception as e:
+            print(f"Error exporting to CSV: {e}")
+            return False

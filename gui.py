@@ -64,6 +64,8 @@ class MainWindow:
                        fieldbackground=entry_bg, borderwidth=1, relief='solid')
         style.configure('TCombobox', background=entry_bg, foreground=entry_fg, selectbackground=accent, 
                        selectforeground=dark_fg, fieldbackground=entry_bg, borderwidth=1, relief='solid')
+        style.configure('TSpinbox', background=entry_bg, foreground=entry_fg, insertcolor=entry_fg,
+                       fieldbackground=entry_bg, borderwidth=1, relief='solid')
         style.configure('Treeview', background=entry_bg, foreground=entry_fg, fieldbackground=entry_bg)
         style.configure('Treeview.Heading', background=tab_normal, foreground=dark_fg)
         
@@ -192,6 +194,9 @@ class MainWindow:
         button_frame = ttk.Frame(header_frame)
         button_frame.pack(side=tk.RIGHT)
         
+        ttk.Button(button_frame, text="Export CSV", 
+                  command=self.export_to_csv).pack(side=tk.LEFT, padx=(0, 5))
+        
         ttk.Button(button_frame, text="Delete Selected", 
                   command=self.delete_selected_record).pack(side=tk.LEFT, padx=(0, 5))
         
@@ -244,6 +249,19 @@ class MainWindow:
         # Reminder settings
         reminder_frame = ttk.LabelFrame(main_frame, text="Reminder Settings", padding="10")
         reminder_frame.pack(fill=tk.X, pady=(0, 20))
+        
+        # Reminder interval
+        interval_frame = ttk.Frame(reminder_frame)
+        interval_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(interval_frame, text="Reminder Interval (hours):").pack(side=tk.LEFT)
+        self.interval_var = tk.StringVar(value=str(self.reminder_manager.get_interval()))
+        interval_spinbox = ttk.Spinbox(interval_frame, from_=1, to=24, width=5, 
+                                      textvariable=self.interval_var, 
+                                      command=self.on_interval_changed)
+        interval_spinbox.pack(side=tk.LEFT, padx=(10, 5))
+        interval_spinbox.bind('<Return>', lambda e: self.on_interval_changed())
+        interval_spinbox.bind('<FocusOut>', lambda e: self.on_interval_changed())
         
         # Reminder status
         status_frame = ttk.Frame(reminder_frame)
@@ -365,24 +383,64 @@ class MainWindow:
         except Exception as e:
             messagebox.showerror("Error", f"Error loading history: {str(e)}")
     
+    def export_to_csv(self):
+        """Export history to CSV file"""
+        try:
+            from tkinter import filedialog
+            
+            # Ask user where to save the file
+            filename = filedialog.asksaveasfilename(
+                title="Export History to CSV",
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                initialfile=f"aws_log_history_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            )
+            
+            if filename:
+                # Export to CSV using database manager
+                if self.db.export_to_csv(filename):
+                    messagebox.showinfo("Success", f"History exported successfully to:\n{filename}")
+                else:
+                    messagebox.showerror("Error", "Failed to export history to CSV")
+                    
+        except Exception as e:
+            messagebox.showerror("Error", f"Error exporting to CSV: {str(e)}")
+    
     def delete_selected_record(self):
-        """Delete the selected record from history"""
-        selected_item = self.history_tree.selection()
-        if not selected_item:
-            messagebox.showwarning("Warning", "No record selected")
+        """Delete the selected record(s) from history"""
+        selected_items = self.history_tree.selection()
+        if not selected_items:
+            messagebox.showwarning("Warning", "No records selected")
             return
         
-        item = self.history_tree.item(selected_item[0])
-        record_id = item['values'][0]
+        # Get count for confirmation message
+        count = len(selected_items)
+        if count == 1:
+            confirm_msg = "Are you sure you want to delete this record?"
+        else:
+            confirm_msg = f"Are you sure you want to delete these {count} records?"
         
-        confirm = messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this record?")
+        confirm = messagebox.askyesno("Confirm Delete", confirm_msg)
         if confirm:
             try:
-                self.db.delete_check_record(record_id)
+                deleted_count = 0
+                for item_id in selected_items:
+                    item = self.history_tree.item(item_id)
+                    record_id = item['values'][0]
+                    if self.db.delete_check_record(record_id):
+                        deleted_count += 1
+                
                 self.refresh_history()
-                messagebox.showinfo("Success", "Record deleted successfully")
+                if deleted_count == count:
+                    if count == 1:
+                        messagebox.showinfo("Success", "Record deleted successfully")
+                    else:
+                        messagebox.showinfo("Success", f"{deleted_count} records deleted successfully")
+                else:
+                    messagebox.showwarning("Partial Success", 
+                                         f"Deleted {deleted_count} of {count} records. Some records may not have been found.")
             except Exception as e:
-                messagebox.showerror("Error", f"Error deleting record: {str(e)}")
+                messagebox.showerror("Error", f"Error deleting records: {str(e)}")
     
     def on_history_double_click(self, event):
         """Handle double-click on history item"""
@@ -447,6 +505,14 @@ class MainWindow:
         """Toggle between light and dark mode"""
         self.dark_mode = not self.dark_mode
         self.setup_theme()
+    
+    def on_interval_changed(self):
+        """Handle changes to the reminder interval"""
+        try:
+            interval = int(self.interval_var.get())
+            self.reminder_manager.set_interval(interval)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid interval value. Please enter a number between 1 and 24.")
     
     def on_reminder_triggered(self):
         """Handle when user responds to a reminder by wanting to log a check"""

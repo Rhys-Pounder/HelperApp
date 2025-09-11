@@ -119,10 +119,19 @@ class ReminderManager:
         self.parent = parent_window
         self.reminder_system = ReminderSystem(callback=self._on_reminder_callback)
         self.on_reminder_callback: Optional[Callable] = None
+        self.interval_hours = 2  # Default 2 hours
     
     def set_reminder_callback(self, callback: Callable):
         """Set callback function to call when user responds to reminder"""
         self.on_reminder_callback = callback
+    
+    def set_interval(self, hours: int):
+        """Set the reminder interval in hours"""
+        self.interval_hours = max(1, hours)  # Minimum 1 hour
+    
+    def get_interval(self) -> int:
+        """Get current reminder interval in hours"""
+        return self.interval_hours
     
     def start(self):
         """Start the reminder system"""
