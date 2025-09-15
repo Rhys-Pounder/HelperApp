@@ -114,6 +114,7 @@ class MainWindow:
         # Create tabs
         self.create_entry_tab(notebook)
         self.create_history_tab(notebook)
+        self.create_queries_tab(notebook)
         self.create_settings_tab(notebook)
     
     def create_entry_tab(self, parent):
@@ -232,6 +233,173 @@ class MainWindow:
         
         # Bind double-click to view details
         self.history_tree.bind("<Double-1>", self.on_history_double_click)
+    
+    def create_queries_tab(self, parent):
+        """Create the AWS queries tab"""
+        self.queries_frame = ttk.Frame(parent)
+        parent.add(self.queries_frame, text="AWS Queries")
+        
+        # Main container
+        main_frame = ttk.Frame(self.queries_frame)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Title
+        ttk.Label(main_frame, text="AWS Query Templates", 
+                 font=("Arial", 16, "bold")).pack(pady=(0, 20))
+        
+        # Create scrollable frame
+        canvas = tk.Canvas(main_frame)
+        scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # CloudWatch Insights Queries
+        insights_frame = ttk.LabelFrame(scrollable_frame, text="CloudWatch Insights Queries", padding="10")
+        insights_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        self.add_query_section(insights_frame, "Error Detection", 
+            "fields @timestamp, @message\n"
+            "| filter @message like /(?i)(error|exception|fail|failed)/\n"
+            "| sort @timestamp desc\n"
+            "| limit 10")
+        
+        self.add_query_section(insights_frame, "Performance Issues", 
+            "fields @timestamp, @message, elapsed_ms\n"
+            "| filter ispresent(elapsed_ms)\n"
+            "| sort elapsed_ms desc\n"
+            "| limit 10")
+        
+        self.add_query_section(insights_frame, "Recent Requests", 
+            "fields @timestamp, @message\n"
+            "| filter @timestamp > @timestamp - 1h\n"
+            "| sort @timestamp desc\n"
+            "| limit 20")
+        
+        self.add_query_section(insights_frame, "Memory Usage", 
+            "fields @timestamp, @message\n"
+            "| filter @message like /memory/\n"
+            "| sort @timestamp desc\n"
+            "| limit 10")
+        
+        # AWS CLI Commands
+        cli_frame = ttk.LabelFrame(scrollable_frame, text="AWS CLI Commands", padding="10")
+        cli_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        self.add_query_section(cli_frame, "CloudTrail Failed Logins",
+            "aws logs start-query \\\n"
+            "--log-group-name YOUR_CLOUDTRAIL_LOG_GROUP \\\n"
+            "--start-time $(date -v-2H +%s) \\\n"
+            "--end-time $(date +%s) \\\n"
+            '--query-string "fields @timestamp, @message | filter eventName = \'ConsoleLogin\' and errorMessage = \'Failed authentication\'"')
+        
+        self.add_query_section(cli_frame, "SSM Session History",
+            "aws ssm describe-sessions \\\n"
+            '--state "History" \\\n'
+            "--filters key=Owner,value=* \\\n"
+            '--query "Sessions[?StartDate>=`date -v-2H +%Y-%m-%dT%H:%M:%SZ`].[SessionId,Owner,StartDate]" \\\n'
+            "--output table")
+        
+        self.add_query_section(cli_frame, "Unhealthy Target Groups",
+            "aws cloudwatch get-metric-statistics \\\n"
+            "--namespace AWS/ApplicationELB \\\n"
+            "--metric-name UnHealthyHostCount \\\n"
+            "--dimensions Name=TargetGroup,Value=YOUR_TARGET_GROUP_ARN \\\n"
+            "--start-time $(date -v-2H +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--period 300 \\\n"
+            "--statistics Sum")
+        
+        self.add_query_section(cli_frame, "Load Balancer 5XX Errors",
+            "aws cloudwatch get-metric-statistics \\\n"
+            "--namespace AWS/ApplicationELB \\\n"
+            "--metric-name HTTPCode_Target_5XX_Count \\\n"
+            "--dimensions Name=LoadBalancer,Value=YOUR_LOAD_BALANCER_ARN \\\n"
+            "--start-time $(date -v-2H +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--period 300 \\\n"
+            "--statistics Sum")
+        
+        # Additional Monitoring
+        monitoring_frame = ttk.LabelFrame(scrollable_frame, text="Additional Monitoring", padding="10")
+        monitoring_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        self.add_query_section(monitoring_frame, "RDS Performance",
+            "aws cloudwatch get-metric-statistics \\\n"
+            "--namespace AWS/RDS \\\n"
+            "--metric-name DatabaseConnections \\\n"
+            "--dimensions Name=DBInstanceIdentifier,Value=YOUR_DB_INSTANCE \\\n"
+            "--start-time $(date -v-1H +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--period 300 \\\n"
+            "--statistics Average,Maximum")
+        
+        self.add_query_section(monitoring_frame, "Lambda Errors",
+            "aws cloudwatch get-metric-statistics \\\n"
+            "--namespace AWS/Lambda \\\n"
+            "--metric-name Errors \\\n"
+            "--dimensions Name=FunctionName,Value=YOUR_FUNCTION_NAME \\\n"
+            "--start-time $(date -v-1H +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--period 300 \\\n"
+            "--statistics Sum")
+        
+        self.add_query_section(monitoring_frame, "EC2 CPU Utilization",
+            "aws cloudwatch get-metric-statistics \\\n"
+            "--namespace AWS/EC2 \\\n"
+            "--metric-name CPUUtilization \\\n"
+            "--dimensions Name=InstanceId,Value=YOUR_INSTANCE_ID \\\n"
+            "--start-time $(date -v-1H +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
+            "--period 300 \\\n"
+            "--statistics Average,Maximum")
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+    
+    def add_query_section(self, parent, title, query):
+        """Add a query section with copy button"""
+        section_frame = ttk.Frame(parent)
+        section_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        # Title and copy button
+        header_frame = ttk.Frame(section_frame)
+        header_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        ttk.Label(header_frame, text=title, font=("Arial", 11, "bold")).pack(side=tk.LEFT)
+        ttk.Button(header_frame, text="Copy", 
+                  command=lambda: self.copy_to_clipboard(query)).pack(side=tk.RIGHT)
+        
+        # Query text
+        query_text = tk.Text(section_frame, height=len(query.split('\n')), wrap=tk.WORD, 
+                            font=("Consolas", 10), state=tk.DISABLED)
+        query_text.pack(fill=tk.X, pady=(0, 5))
+        
+        # Insert query text
+        query_text.config(state=tk.NORMAL)
+        query_text.insert(1.0, query)
+        query_text.config(state=tk.DISABLED)
+        
+        # Apply theme
+        if self.dark_mode:
+            query_text.configure(bg="#2d2d2d", fg="#e6e6e6")
+        else:
+            query_text.configure(bg="#f8f8f8", fg="#000000")
+    
+    def copy_to_clipboard(self, text):
+        """Copy text to clipboard"""
+        self.root.clipboard_clear()
+        self.root.clipboard_append(text)
+        self.root.update()  # Required for clipboard to work
+        
+        # Show brief confirmation
+        messagebox.showinfo("Copied", "Query copied to clipboard!")
     
     def create_settings_tab(self, parent):
         """Create the settings tab"""
