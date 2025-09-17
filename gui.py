@@ -14,6 +14,15 @@ from config import (
 )
 import tkinter.font as tkfont
 
+# Import for Evidence Pack Generator
+try:
+    import customtkinter as ctk
+    from evidence_pack_tab import EvidencePackTab
+    EVIDENCE_PACK_AVAILABLE = True
+except ImportError:
+    EVIDENCE_PACK_AVAILABLE = False
+    print("Warning: Evidence Pack Generator not available. Install customtkinter and pyperclip to enable.")
+
 
 class MainWindow:
     """Main application window"""
@@ -116,6 +125,10 @@ class MainWindow:
         self.create_history_tab(notebook)
         self.create_queries_tab(notebook)
         self.create_settings_tab(notebook)
+        
+        # Add Evidence Pack Generator tab if available
+        if EVIDENCE_PACK_AVAILABLE:
+            self.create_evidence_pack_tab(notebook)
     
     def create_entry_tab(self, parent):
         """Create the log entry tab"""
@@ -473,6 +486,38 @@ class MainWindow:
         
         ttk.Label(info_frame, text=info_text, justify=tk.LEFT).pack(anchor=tk.W)
     
+    def create_evidence_pack_tab(self, parent):
+        """Create the Evidence Pack Generator tab"""
+        if not EVIDENCE_PACK_AVAILABLE:
+            return
+            
+        try:
+            # Set customtkinter appearance to match the current theme
+            if self.dark_mode:
+                ctk.set_appearance_mode("dark")
+            else:
+                ctk.set_appearance_mode("light")
+            ctk.set_default_color_theme("blue")
+            
+            # Create tab frame
+            self.evidence_frame = ttk.Frame(parent)
+            parent.add(self.evidence_frame, text="Evidence Pack Generator")
+            
+            # Create the Evidence Pack generator inside the ttk frame
+            self.evidence_pack = EvidencePackTab(self.evidence_frame)
+            self.evidence_pack.pack(fill=tk.BOTH, expand=True)
+            
+        except Exception as e:
+            print(f"Error creating Evidence Pack tab: {e}")
+            # If there's an error, create a simple error message tab
+            error_frame = ttk.Frame(parent)
+            parent.add(error_frame, text="Evidence Pack (Error)")
+            
+            error_label = ttk.Label(error_frame, 
+                                  text=f"Evidence Pack Generator unavailable:\n{str(e)}\n\nPlease install: pip install customtkinter pyperclip",
+                                  justify=tk.CENTER)
+            error_label.pack(expand=True)
+    
     def setup_reminder_system(self):
         """Setup the reminder system callbacks"""
         self.reminder_manager.set_reminder_callback(self.on_reminder_triggered)
@@ -673,6 +718,16 @@ class MainWindow:
         """Toggle between light and dark mode"""
         self.dark_mode = not self.dark_mode
         self.setup_theme()
+        
+        # Update customtkinter theme if Evidence Pack is available
+        if EVIDENCE_PACK_AVAILABLE:
+            try:
+                if self.dark_mode:
+                    ctk.set_appearance_mode("dark")
+                else:
+                    ctk.set_appearance_mode("light")
+            except Exception as e:
+                print(f"Error updating customtkinter theme: {e}")
     
     def on_interval_changed(self):
         """Handle changes to the reminder interval"""
