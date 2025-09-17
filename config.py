@@ -3,6 +3,7 @@ Configuration settings for AWS Log Checker Helper Application
 """
 
 import os
+import sys
 from pathlib import Path
 
 # Application settings
@@ -34,3 +35,13 @@ CHECK_OUTCOMES = [
     "Action Required",
     "No Access"
 ]
+
+# Determine if running as compiled executable
+if getattr(sys, 'frozen', False):
+    # Running as compiled executable
+    application_path = sys._MEIPASS
+    EVIDENCE_PACK_PATH = os.path.join(application_path, "evidence_pack.txt")
+else:
+    # Running as script
+    application_path = os.path.dirname(os.path.abspath(__file__))
+    EVIDENCE_PACK_PATH = os.path.join(application_path, "evidence_pack.txt")

@@ -1,0 +1,50 @@
+AWS Log Checker Helper - Evidence Pack
+
+This file contains templates and examples for documenting log check findings.
+
+EVIDENCE DOCUMENTATION TEMPLATE:
+=================================
+
+Date/Time: [YYYY-MM-DD HH:MM:SS]
+Checker: [Your Name]
+Environment: [Production/Staging/Development]
+AWS Account: [Account ID or Name]
+
+LOG SOURCES CHECKED:
+- CloudWatch Logs: [Log Group Names]
+- CloudTrail: [Trail Names]
+- Application Logs: [Service Names]
+- Security Logs: [WAF, GuardDuty, etc.]
+
+FINDINGS:
+- [Finding 1]: Description and impact
+- [Finding 2]: Description and impact
+- [Finding 3]: Description and impact
+
+ACTIONS TAKEN:
+- [Action 1]: Description
+- [Action 2]: Description
+
+FOLLOW-UP REQUIRED:
+- [Item 1]: Due date and owner
+- [Item 2]: Due date and owner
+
+SCREENSHOTS/LOGS:
+[Attach or reference any supporting evidence]
+
+SIGN-OFF:
+Checked by: [Name]
+Reviewed by: [Name]
+Date: [YYYY-MM-DD]
+
+=================================
+
+COMMON AWS LOG LOCATIONS:
+- /aws/lambda/[function-name]
+- /aws/apigateway/[api-name]
+- /aws/rds/instance/[db-instance]/error
+- /aws/ecs/containerinsights/[cluster]/[service]
+- CloudTrail: [account-id]_CloudTrail_[region]
+
+USEFUL CLOUDWATCH INSIGHTS QUERIES:
+See the AWS Queries tab in the application for ready-to-use query templates.

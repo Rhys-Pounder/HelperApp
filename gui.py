@@ -124,11 +124,8 @@ class MainWindow:
         self.create_entry_tab(notebook)
         self.create_history_tab(notebook)
         self.create_queries_tab(notebook)
+        self.create_evidence_tab(notebook)
         self.create_settings_tab(notebook)
-        
-        # Add Evidence Pack Generator tab if available
-        if EVIDENCE_PACK_AVAILABLE:
-            self.create_evidence_pack_tab(notebook)
     
     def create_entry_tab(self, parent):
         """Create the log entry tab"""
@@ -408,6 +405,173 @@ class MainWindow:
         
         # Show brief confirmation
         messagebox.showinfo("Copied", "Query copied to clipboard!")
+    
+    def create_evidence_tab(self, parent):
+        """Create the evidence pack tab"""
+        self.evidence_frame = ttk.Frame(parent)
+        parent.add(self.evidence_frame, text="Evidence Pack")
+        
+        # Main container
+        main_frame = ttk.Frame(self.evidence_frame)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Title
+        ttk.Label(main_frame, text="Evidence Pack Template", 
+                 font=("Arial", 16, "bold")).pack(pady=(0, 20))
+        
+        # Buttons frame
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Button(button_frame, text="Copy Template", 
+                  command=self.copy_evidence_template).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(button_frame, text="Save to File", 
+                  command=self.save_evidence_to_file).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(button_frame, text="Load from File", 
+                  command=self.load_evidence_from_file).pack(side=tk.LEFT)
+        
+        # Evidence pack content
+        content_frame = ttk.LabelFrame(main_frame, text="Evidence Documentation Template", padding="10")
+        content_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Create scrollable text area
+        self.evidence_text = scrolledtext.ScrolledText(content_frame, wrap=tk.WORD, 
+                                                      font=("Consolas", 10))
+        self.evidence_text.pack(fill=tk.BOTH, expand=True)
+        
+        # Load evidence pack content
+        self.load_evidence_pack_content()
+    
+    def load_evidence_pack_content(self):
+        """Load the evidence pack template content"""
+        try:
+            from config import EVIDENCE_PACK_PATH
+            
+            if hasattr(self, 'evidence_text'):
+                self.evidence_text.delete(1.0, tk.END)
+                
+                try:
+                    with open(EVIDENCE_PACK_PATH, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    self.evidence_text.insert(1.0, content)
+                except FileNotFoundError:
+                    # If file doesn't exist, show default template
+                    default_content = self.get_default_evidence_template()
+                    self.evidence_text.insert(1.0, default_content)
+                except Exception as e:
+                    self.evidence_text.insert(1.0, f"Error loading evidence pack: {str(e)}")
+                
+                # Apply theme
+                if self.dark_mode:
+                    self.evidence_text.configure(bg="#2d2d2d", fg="#e6e6e6", insertbackground="#e6e6e6")
+                else:
+                    self.evidence_text.configure(bg="#f8f8f8", fg="#000000", insertbackground="#000000")
+        
+        except Exception as e:
+            print(f"Error loading evidence pack content: {e}")
+    
+    def get_default_evidence_template(self):
+        """Get default evidence template if file is not available"""
+        return """AWS Log Checker Helper - Evidence Pack
+
+This file contains templates and examples for documenting log check findings.
+
+EVIDENCE DOCUMENTATION TEMPLATE:
+=================================
+
+Date/Time: [YYYY-MM-DD HH:MM:SS]
+Checker: [Your Name]
+Environment: [Production/Staging/Development]
+AWS Account: [Account ID or Name]
+
+LOG SOURCES CHECKED:
+- CloudWatch Logs: [Log Group Names]
+- CloudTrail: [Trail Names]
+- Application Logs: [Service Names]
+- Security Logs: [WAF, GuardDuty, etc.]
+
+FINDINGS:
+- [Finding 1]: Description and impact
+- [Finding 2]: Description and impact
+- [Finding 3]: Description and impact
+
+ACTIONS TAKEN:
+- [Action 1]: Description
+- [Action 2]: Description
+
+FOLLOW-UP REQUIRED:
+- [Item 1]: Due date and owner
+- [Item 2]: Due date and owner
+
+SCREENSHOTS/LOGS:
+[Attach or reference any supporting evidence]
+
+SIGN-OFF:
+Checked by: [Name]
+Reviewed by: [Name]
+Date: [YYYY-MM-DD]
+
+=================================
+
+COMMON AWS LOG LOCATIONS:
+- /aws/lambda/[function-name]
+- /aws/apigateway/[api-name]
+- /aws/rds/instance/[db-instance]/error
+- /aws/ecs/containerinsights/[cluster]/[service]
+- CloudTrail: [account-id]_CloudTrail_[region]
+
+USEFUL CLOUDWATCH INSIGHTS QUERIES:
+See the AWS Queries tab in the application for ready-to-use query templates."""
+    
+    def copy_evidence_template(self):
+        """Copy evidence template to clipboard"""
+        content = self.evidence_text.get(1.0, tk.END).strip()
+        self.root.clipboard_clear()
+        self.root.clipboard_append(content)
+        self.root.update()
+        messagebox.showinfo("Copied", "Evidence template copied to clipboard!")
+    
+    def save_evidence_to_file(self):
+        """Save evidence content to a file"""
+        try:
+            from tkinter import filedialog
+            
+            filename = filedialog.asksaveasfilename(
+                title="Save Evidence Documentation",
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+                initialfile=f"evidence_pack_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+            )
+            
+            if filename:
+                content = self.evidence_text.get(1.0, tk.END)
+                with open(filename, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                messagebox.showinfo("Success", f"Evidence documentation saved to:\n{filename}")
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Error saving file: {str(e)}")
+    
+    def load_evidence_from_file(self):
+        """Load evidence content from a file"""
+        try:
+            from tkinter import filedialog
+            
+            filename = filedialog.askopenfilename(
+                title="Load Evidence Documentation",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+            )
+            
+            if filename:
+                with open(filename, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                self.evidence_text.delete(1.0, tk.END)
+                self.evidence_text.insert(1.0, content)
+                messagebox.showinfo("Success", "Evidence documentation loaded successfully!")
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Error loading file: {str(e)}")
     
     def create_settings_tab(self, parent):
         """Create the settings tab"""
