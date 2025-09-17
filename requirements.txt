@@ -3,3 +3,7 @@
 
 # Optional dependencies for enhanced notifications (install if needed):
 # plyer>=2.1  # Cross-platform notifications
+
+# Evidence Pack Generator dependencies:
+customtkinter>=5.2.0  # Modern UI components
+pyperclip>=1.8.0  # Clipboard functionality
