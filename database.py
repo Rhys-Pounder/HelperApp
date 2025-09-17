@@ -148,3 +148,33 @@ class DatabaseManager:
         except Exception as e:
             print(f"Error exporting to CSV: {e}")
             return False
+
+    def add_check(self, timestamp: datetime.datetime, outcome: str, notes: str = "") -> int:
+        """Add a new check record (alias for GUI compatibility)"""
+        return self.add_check_record(outcome, notes, timestamp)
+    
+    def get_all_checks(self) -> List[tuple]:
+        """Get all check records in tuple format for GUI compatibility"""
+        records = self.get_check_records(limit=1000)  # Get more records
+        # Convert to tuple format expected by GUI: (id, timestamp, outcome, notes)
+        return [(record['id'], record['timestamp'], record['outcome'], record['notes']) 
+                for record in records]
+    
+    def delete_check(self, record_id: int) -> bool:
+        """Delete a check record (alias for GUI compatibility)"""
+        return self.delete_check_record(record_id)
+    
+    def clean_old_records(self, cutoff_date: datetime.datetime) -> int:
+        """Clean old records before cutoff date"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute("""
+                DELETE FROM check_records 
+                WHERE timestamp < ?
+            """, (cutoff_date,))
+            conn.commit()
+            return cursor.rowcount
+    
+    def close(self):
+        """Close database connection (for compatibility)"""
+        # SQLite connections are closed automatically with context managers
+        pass

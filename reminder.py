@@ -133,6 +133,15 @@ class ReminderManager:
         """Get current reminder interval in hours"""
         return self.interval_hours
     
+    def schedule_reminder(self, hours: int, message: str = None):
+        """Schedule reminders with the specified interval"""
+        self.set_interval(hours)
+        self.start()
+    
+    def cancel_reminders(self):
+        """Cancel all scheduled reminders"""
+        self.stop()
+    
     def start(self):
         """Start the reminder system"""
         self.reminder_system.start_reminders()

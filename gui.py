@@ -19,9 +19,86 @@ try:
     import customtkinter as ctk
     from evidence_pack_tab import EvidencePackTab
     EVIDENCE_PACK_AVAILABLE = True
-except ImportError:
+    print("Successfully imported customtkinter and evidence_pack_tab")
+except ImportError as e:
     EVIDENCE_PACK_AVAILABLE = False
-    print("Warning: Evidence Pack Generator not available. Install customtkinter and pyperclip to enable.")
+    print(f"Warning: Evidence Pack Generator not available: {e}")
+except Exception as e:
+    EVIDENCE_PACK_AVAILABLE = False
+    print(f"Error loading Evidence Pack Generator: {e}")
+
+
+class ModernFrame(tk.Frame):
+    """Custom frame with modern styling"""
+    def __init__(self, parent, bg_color="#2d2d2d", corner_radius=10, **kwargs):
+        super().__init__(parent, bg=bg_color, relief="flat", bd=0, **kwargs)
+        self.bg_color = bg_color
+        self.corner_radius = corner_radius
+
+
+class ModernButton(tk.Button):
+    """Custom button with modern styling"""
+    def __init__(self, parent, **kwargs):
+        # Set default modern styling
+        style_kwargs = {
+            'bg': '#4f8cff',
+            'fg': '#ffffff',
+            'relief': 'flat',
+            'bd': 0,
+            'font': ('Segoe UI', 11),
+            'cursor': 'hand2',
+            'activebackground': '#3465a4',
+            'activeforeground': '#ffffff'
+        }
+        style_kwargs.update(kwargs)
+        super().__init__(parent, **style_kwargs)
+
+
+class ModernEntry(tk.Entry):
+    """Custom entry with modern styling"""
+    def __init__(self, parent, **kwargs):
+        style_kwargs = {
+            'bg': '#3c4043',
+            'fg': '#e6e6e6',
+            'relief': 'flat',
+            'bd': 1,
+            'font': ('Segoe UI', 11),
+            'insertbackground': '#e6e6e6',
+            'highlightthickness': 1,
+            'highlightcolor': '#4f8cff',
+            'highlightbackground': '#2d2d2d'
+        }
+        style_kwargs.update(kwargs)
+        super().__init__(parent, **style_kwargs)
+
+
+class ModernLabel(tk.Label):
+    """Custom label with modern styling"""
+    def __init__(self, parent, **kwargs):
+        style_kwargs = {
+            'bg': '#2d2d2d',
+            'fg': '#e6e6e6',
+            'font': ('Segoe UI', 11)
+        }
+        style_kwargs.update(kwargs)
+        super().__init__(parent, **style_kwargs)
+
+
+class ModernText(scrolledtext.ScrolledText):
+    """Custom text widget with modern styling"""
+    def __init__(self, parent, **kwargs):
+        style_kwargs = {
+            'bg': '#3c4043',
+            'fg': '#e6e6e6',
+            'relief': 'flat',
+            'bd': 1,
+            'font': ('Segoe UI', 11),
+            'insertbackground': '#e6e6e6',
+            'selectbackground': '#4f8cff',
+            'selectforeground': '#ffffff'
+        }
+        style_kwargs.update(kwargs)
+        super().__init__(parent, **style_kwargs)
 
 
 class MainWindow:
@@ -32,78 +109,94 @@ class MainWindow:
         self.db = DatabaseManager()
         self.reminder_manager = ReminderManager(self.root)
         self.dark_mode = True  # Start with dark mode
-        self.setup_theme()  # Add dark mode and font styling
+        self.setup_modern_theme()  # Use modern theme
         self.setup_window()
         self.create_widgets()
         self.setup_reminder_system()
         self.refresh_history()
     
-    def setup_theme(self):
-        """Set dark mode and custom font"""
+    def setup_modern_theme(self):
+        """Set modern dark theme with rounded corners and custom styling"""
+        # Modern color scheme
+        self.colors = {
+            'bg': '#23272e',
+            'card_bg': '#2d2d2d',
+            'input_bg': '#3c4043',
+            'accent': '#4f8cff',
+            'text': '#e6e6e6',
+            'text_secondary': '#b3b3b3',
+            'success': '#28a745',
+            'danger': '#dc3545',
+            'warning': '#ffc107'
+        }
+        
+        # Configure root window
+        self.root.configure(bg=self.colors['bg'])
+        
+        # Configure ttk styles for modern look
         style = ttk.Style(self.root)
         style.theme_use('clam')
         
-        if self.dark_mode:
-            dark_bg = "#23272e"
-            dark_fg = "#e6e6e6"
-            accent = "#4f8cff"
-            entry_bg = "#3c4043"
-            entry_fg = "#e6e6e6"
-            tab_selected = "#4f8cff"
-            tab_normal = "#2c313c"
-        else:
-            dark_bg = "#ffffff"
-            dark_fg = "#000000"
-            accent = "#0078d4"
-            entry_bg = "#ffffff"
-            entry_fg = "#000000"
-            tab_selected = "#e1ecf4"
-            tab_normal = "#f0f0f0"
+        # Configure ttk styles to match modern theme
+        style.configure('.', background=self.colors['card_bg'], foreground=self.colors['text'], 
+                       font=('Segoe UI', 11))
+        style.configure('TLabel', background=self.colors['card_bg'], foreground=self.colors['text'])
+        style.configure('TFrame', background=self.colors['card_bg'], relief='flat', borderwidth=0)
+        style.configure('TLabelframe', background=self.colors['card_bg'], foreground=self.colors['text'],
+                       relief='flat', borderwidth=1)
+        style.configure('TLabelframe.Label', background=self.colors['card_bg'], 
+                       foreground=self.colors['text'])
+        style.configure('TButton', background=self.colors['accent'], foreground=self.colors['text'],
+                       relief='flat', borderwidth=0, padding=[12, 8])
+        style.configure('TNotebook', background=self.colors['bg'], borderwidth=0, tabmargins=[0, 5, 0, 0])
+        style.configure('TNotebook.Tab', background=self.colors['card_bg'], foreground=self.colors['text'], 
+                       padding=[20, 12], borderwidth=0)
+        style.configure('TEntry', background=self.colors['input_bg'], foreground=self.colors['text'], 
+                       insertcolor=self.colors['text'], fieldbackground=self.colors['input_bg'], 
+                       borderwidth=1, relief='flat')
+        style.configure('TCombobox', background=self.colors['input_bg'], foreground=self.colors['text'], 
+                       selectbackground=self.colors['accent'], selectforeground=self.colors['text'], 
+                       fieldbackground=self.colors['input_bg'], borderwidth=1, relief='flat')
+        style.configure('TSpinbox', background=self.colors['input_bg'], foreground=self.colors['text'], 
+                       insertcolor=self.colors['text'], fieldbackground=self.colors['input_bg'], 
+                       borderwidth=1, relief='flat')
+        style.configure('Treeview', background=self.colors['input_bg'], foreground=self.colors['text'], 
+                       fieldbackground=self.colors['input_bg'], borderwidth=0)
+        style.configure('Treeview.Heading', background=self.colors['card_bg'], 
+                       foreground=self.colors['text'], borderwidth=0, relief='flat')
         
-        self.root.configure(bg=dark_bg)
-        style.configure('.', background=dark_bg, foreground=dark_fg, font=('Segoe UI', 11))
-        style.configure('TLabel', background=dark_bg, foreground=dark_fg)
-        style.configure('TFrame', background=dark_bg)
-        style.configure('TLabelframe', background=dark_bg, foreground=dark_fg)
-        style.configure('TLabelframe.Label', background=dark_bg, foreground=dark_fg)
-        style.configure('TButton', background=accent, foreground=dark_fg)
-        style.configure('TNotebook', background=dark_bg, borderwidth=0)
-        style.configure('TNotebook.Tab', background=tab_normal, foreground=dark_fg, padding=[12, 8])
-        style.configure('TEntry', background=entry_bg, foreground=entry_fg, insertcolor=entry_fg, 
-                       fieldbackground=entry_bg, borderwidth=1, relief='solid')
-        style.configure('TCombobox', background=entry_bg, foreground=entry_fg, selectbackground=accent, 
-                       selectforeground=dark_fg, fieldbackground=entry_bg, borderwidth=1, relief='solid')
-        style.configure('TSpinbox', background=entry_bg, foreground=entry_fg, insertcolor=entry_fg,
-                       fieldbackground=entry_bg, borderwidth=1, relief='solid')
-        style.configure('Treeview', background=entry_bg, foreground=entry_fg, fieldbackground=entry_bg)
-        style.configure('Treeview.Heading', background=tab_normal, foreground=dark_fg)
+        # Configure style mappings for hover effects
+        style.map('TButton', 
+                 background=[('active', '#3465a4'), ('pressed', '#2851a3')])
+        style.map('TNotebook.Tab', 
+                 background=[('selected', self.colors['accent']), ('active', '#3465a4')])
+        style.map('TEntry', 
+                 fieldbackground=[('readonly', self.colors['input_bg']), ('focus', self.colors['input_bg'])])
+        style.map('TCombobox', 
+                 fieldbackground=[('readonly', self.colors['input_bg']), ('focus', self.colors['input_bg'])])
         
-        style.map('TButton', background=[('active', accent), ('pressed', '#3465a4')])
-        style.map('TNotebook.Tab', background=[('selected', tab_selected), ('active', accent)])
-        style.map('TEntry', fieldbackground=[('readonly', entry_bg), ('focus', entry_bg)])
-        style.map('TCombobox', fieldbackground=[('readonly', entry_bg), ('focus', entry_bg)])
-        
+        # Set default font
         default_font = tkfont.nametofont("TkDefaultFont")
         default_font.configure(family="Segoe UI", size=11)
         self.root.option_add("*Font", default_font)
-        
-        # Configure ScrolledText widget colors
-        if hasattr(self, 'notes_text'):
-            if self.dark_mode:
-                self.notes_text.configure(bg="#3c4043", fg="#e6e6e6", insertbackground="#e6e6e6")
-            else:
-                self.notes_text.configure(bg="#ffffff", fg="#000000", insertbackground="#000000")
     
-    def _apply_scrolledtext_theme(self, widget):
-        """Apply theme to ScrolledText widgets recursively"""
-        if isinstance(widget, scrolledtext.ScrolledText):
-            if self.dark_mode:
-                widget.configure(bg="#3c4043", fg="#e6e6e6", insertbackground="#e6e6e6")
-            else:
-                widget.configure(bg="#ffffff", fg="#000000", insertbackground="#000000")
-        elif hasattr(widget, 'winfo_children'):
-            for child in widget.winfo_children():
-                self._apply_scrolledtext_theme(child)
+    def create_modern_section(self, parent, title, content_height=None):
+        """Create a modern section with title and content area"""
+        # Section container
+        section_frame = ModernFrame(parent, bg_color=self.colors['card_bg'])
+        section_frame.pack(fill=tk.X, padx=20, pady=15)
+        
+        # Title
+        title_label = ModernLabel(section_frame, text=title, 
+                                 font=('Segoe UI', 16, 'bold'),
+                                 bg=self.colors['card_bg'])
+        title_label.pack(pady=(20, 15), padx=20, anchor="w")
+        
+        # Content frame
+        content_frame = ModernFrame(section_frame, bg_color=self.colors['card_bg'])
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
+        
+        return section_frame, content_frame
     
     def setup_window(self):
         """Configure the main window"""
@@ -116,151 +209,72 @@ class MainWindow:
     
     def create_widgets(self):
         """Create and layout all GUI widgets"""
+        # Main container
+        main_container = ModernFrame(self.root, bg_color=self.colors['bg'])
+        main_container.pack(fill=tk.BOTH, expand=True)
+        
+        # App title
+        app_title = ModernLabel(main_container, text="AWS Log Checker Helper", 
+                               font=('Segoe UI', 24, 'bold'),
+                               bg=self.colors['bg'])
+        app_title.pack(pady=(20, 10))
+        
         # Create notebook for tabs
-        notebook = ttk.Notebook(self.root)
-        notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        self.notebook = ttk.Notebook(main_container)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+        
+        # Bind tab change event
+        self.notebook.bind("<<NotebookTabChanged>>", self.on_tab_changed)
         
         # Create tabs
-        self.create_entry_tab(notebook)
-        self.create_history_tab(notebook)
-        self.create_queries_tab(notebook)
-        self.create_evidence_tab(notebook)
-        self.create_settings_tab(notebook)
+        self.create_entry_tab(self.notebook)
+        self.create_history_tab(self.notebook)
+        self.create_queries_tab(self.notebook)
+        self.create_evidence_tab(self.notebook)
+        self.create_settings_tab(self.notebook)
+    
+    def on_tab_changed(self, event):
+        """Handle tab change events to ensure proper content loading"""
+        selected_tab = event.widget.select()
+        tab_text = event.widget.tab(selected_tab, "text")
+        
+        # Force canvas updates based on which tab is selected
+        self.root.after(1, self.refresh_current_tab_content)
+    
+    def refresh_current_tab_content(self):
+        """Refresh the content of the currently selected tab"""
+        try:
+            current_tab = self.notebook.select()
+            tab_text = self.notebook.tab(current_tab, "text")
+            
+            # Update scrollregion for each tab's canvas
+            if "📝 Log Check" in tab_text and hasattr(self, 'entry_canvas'):
+                self.entry_canvas.configure(scrollregion=self.entry_canvas.bbox("all"))
+                self.entry_canvas.update_idletasks()
+            elif "🔍 AWS Queries" in tab_text and hasattr(self, 'queries_canvas'):
+                self.queries_canvas.configure(scrollregion=self.queries_canvas.bbox("all"))
+                self.queries_canvas.update_idletasks()
+            elif "⚙️ Settings" in tab_text and hasattr(self, 'settings_canvas'):
+                self.settings_canvas.configure(scrollregion=self.settings_canvas.bbox("all"))
+                self.settings_canvas.update_idletasks()
+            elif "📊 History" in tab_text:
+                # Refresh history data when tab is selected
+                self.refresh_history()
+            elif "📋 Evidence Pack" in tab_text and hasattr(self, 'evidence_pack_generator'):
+                # Force immediate refresh and update of the Evidence Pack tab
+                self.evidence_pack_generator.force_update()
+        except Exception as e:
+            print(f"Error refreshing tab content: {e}")
     
     def create_entry_tab(self, parent):
-        """Create the log entry tab"""
-        self.entry_frame = ttk.Frame(parent)
-        parent.add(self.entry_frame, text="Log Check")
+        """Create the log entry tab with modern styling"""
+        self.entry_frame = ModernFrame(parent, bg_color=self.colors['bg'])
+        parent.add(self.entry_frame, text="📝 Log Check")
         
-        # Main container with padding
-        main_frame = ttk.Frame(self.entry_frame)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Title
-        title_label = ttk.Label(main_frame, text="AWS Log Check Entry", 
-                               font=("Arial", 16, "bold"))
-        title_label.pack(pady=(0, 20))
-        
-        # Entry form
-        form_frame = ttk.LabelFrame(main_frame, text="Check Details", padding="10")
-        form_frame.pack(fill=tk.X, pady=(0, 20))
-        
-        # Date and time
-        datetime_frame = ttk.Frame(form_frame)
-        datetime_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        ttk.Label(datetime_frame, text="Date & Time:").pack(side=tk.LEFT)
-        self.datetime_var = tk.StringVar()
-        self.datetime_entry = ttk.Entry(datetime_frame, textvariable=self.datetime_var, width=20)
-        self.datetime_entry.pack(side=tk.LEFT, padx=(10, 5))
-        
-        ttk.Button(datetime_frame, text="Now", command=self.set_current_datetime).pack(side=tk.LEFT)
-        
-        # Outcome
-        outcome_frame = ttk.Frame(form_frame)
-        outcome_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        ttk.Label(outcome_frame, text="Outcome:").pack(side=tk.LEFT)
-        self.outcome_var = tk.StringVar()
-        self.outcome_combo = ttk.Combobox(outcome_frame, textvariable=self.outcome_var,
-                                         values=CHECK_OUTCOMES, state="readonly", width=20)
-        self.outcome_combo.pack(side=tk.LEFT, padx=(10, 0))
-        self.outcome_combo.set(CHECK_OUTCOMES[0])  # Set default
-        
-        # Notes
-        notes_frame = ttk.Frame(form_frame)
-        notes_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
-        
-        ttk.Label(notes_frame, text="Notes:").pack(anchor=tk.W)
-        self.notes_text = scrolledtext.ScrolledText(notes_frame, height=6, wrap=tk.WORD)
-        self.notes_text.pack(fill=tk.BOTH, expand=True, pady=(5, 0))
-        
-        # Buttons
-        button_frame = ttk.Frame(form_frame)
-        button_frame.pack(fill=tk.X, pady=(10, 0))
-        
-        ttk.Button(button_frame, text="Save Check", command=self.save_check).pack(side=tk.LEFT)
-        ttk.Button(button_frame, text="Clear Form", command=self.clear_form).pack(side=tk.LEFT, padx=(10, 0))
-        
-        # Initialize with current date/time
-        self.set_current_datetime()
-    
-    def create_history_tab(self, parent):
-        """Create the history viewing tab"""
-        self.history_frame = ttk.Frame(parent)
-        parent.add(self.history_frame, text="History")
-        
-        # Main container
-        main_frame = ttk.Frame(self.history_frame)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Title and controls
-        header_frame = ttk.Frame(main_frame)
-        header_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        ttk.Label(header_frame, text="Check History", 
-                 font=("Arial", 16, "bold")).pack(side=tk.LEFT)
-        
-        # Button frame for controls
-        button_frame = ttk.Frame(header_frame)
-        button_frame.pack(side=tk.RIGHT)
-        
-        ttk.Button(button_frame, text="Export CSV", 
-                  command=self.export_to_csv).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(button_frame, text="Delete Selected", 
-                  command=self.delete_selected_record).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(button_frame, text="Refresh", 
-                  command=self.refresh_history).pack(side=tk.LEFT)
-        
-        # History list
-        list_frame = ttk.LabelFrame(main_frame, text="Recent Checks", padding="5")
-        list_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Treeview for history
-        columns = ("ID", "Date/Time", "Outcome", "Notes")
-        self.history_tree = ttk.Treeview(list_frame, columns=columns, show="headings", height=15)
-        
-        # Configure columns
-        self.history_tree.heading("ID", text="ID")
-        self.history_tree.heading("Date/Time", text="Date/Time")
-        self.history_tree.heading("Outcome", text="Outcome")
-        self.history_tree.heading("Notes", text="Notes")
-        
-        self.history_tree.column("ID", width=50)
-        self.history_tree.column("Date/Time", width=180)
-        self.history_tree.column("Outcome", width=150)
-        self.history_tree.column("Notes", width=300)
-        
-        # Scrollbar for treeview
-        scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.history_tree.yview)
-        self.history_tree.configure(yscrollcommand=scrollbar.set)
-        
-        # Pack treeview and scrollbar
-        self.history_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # Bind double-click to view details
-        self.history_tree.bind("<Double-1>", self.on_history_double_click)
-    
-    def create_queries_tab(self, parent):
-        """Create the AWS queries tab"""
-        self.queries_frame = ttk.Frame(parent)
-        parent.add(self.queries_frame, text="AWS Queries")
-        
-        # Main container
-        main_frame = ttk.Frame(self.queries_frame)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Title
-        ttk.Label(main_frame, text="AWS Query Templates", 
-                 font=("Arial", 16, "bold")).pack(pady=(0, 20))
-        
-        # Create scrollable frame
-        canvas = tk.Canvas(main_frame)
-        scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
+        # Create scrollable content
+        canvas = tk.Canvas(self.entry_frame, bg=self.colors['bg'], highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self.entry_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ModernFrame(canvas, bg_color=self.colors['bg'])
         
         scrollable_frame.bind(
             "<Configure>",
@@ -270,549 +284,543 @@ class MainWindow:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        # CloudWatch Insights Queries
-        insights_frame = ttk.LabelFrame(scrollable_frame, text="CloudWatch Insights Queries", padding="10")
-        insights_frame.pack(fill=tk.X, pady=(0, 15))
+        # Enhanced mousewheel scrolling for macOS
+        def _on_mousewheel(event):
+            if hasattr(event, 'delta') and event.delta:
+                # Windows/macOS with delta
+                canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+            elif hasattr(event, 'num'):
+                # Linux scroll events
+                if event.num == 4:
+                    canvas.yview_scroll(-1, "units")
+                elif event.num == 5:
+                    canvas.yview_scroll(1, "units")
         
-        self.add_query_section(insights_frame, "Error Detection", 
+        # Bind mousewheel to the entire tab area
+        def bind_mousewheel_to_all(widget):
+            try:
+                widget.bind("<MouseWheel>", _on_mousewheel, add=True)
+                widget.bind("<Button-4>", _on_mousewheel, add=True)
+                widget.bind("<Button-5>", _on_mousewheel, add=True)
+                for child in widget.winfo_children():
+                    bind_mousewheel_to_all(child)
+            except:
+                pass
+        
+        # Apply comprehensive mousewheel binding
+        def setup_mousewheel():
+            bind_mousewheel_to_all(self.entry_frame)
+            bind_mousewheel_to_all(canvas)
+            bind_mousewheel_to_all(scrollable_frame)
+        
+        # Entry form section
+        form_section, form_content = self.create_modern_section(scrollable_frame, "Check Details")
+        
+        # Date and time row
+        datetime_row = ModernFrame(form_content, bg_color=self.colors['card_bg'])
+        datetime_row.pack(fill=tk.X, pady=10)
+        
+        ModernLabel(datetime_row, text="Date & Time:", bg=self.colors['card_bg']).pack(side=tk.LEFT)
+        self.datetime_var = tk.StringVar()
+        self.datetime_entry = ModernEntry(datetime_row, textvariable=self.datetime_var, width=20)
+        self.datetime_entry.pack(side=tk.LEFT, padx=(15, 10))
+        
+        now_btn = ModernButton(datetime_row, text="Now", command=self.set_current_datetime)
+        now_btn.pack(side=tk.LEFT)
+        
+        # Outcome row
+        outcome_row = ModernFrame(form_content, bg_color=self.colors['card_bg'])
+        outcome_row.pack(fill=tk.X, pady=10)
+        
+        ModernLabel(outcome_row, text="Outcome:", bg=self.colors['card_bg']).pack(side=tk.LEFT)
+        self.outcome_var = tk.StringVar()
+        self.outcome_combo = ttk.Combobox(outcome_row, textvariable=self.outcome_var,
+                                         values=CHECK_OUTCOMES, state="readonly", width=20)
+        self.outcome_combo.pack(side=tk.LEFT, padx=(15, 0))
+        self.outcome_combo.set(CHECK_OUTCOMES[0])
+        
+        # Notes section
+        notes_label = ModernLabel(form_content, text="Notes:", bg=self.colors['card_bg'])
+        notes_label.pack(anchor=tk.W, pady=(15, 5))
+        
+        self.notes_text = ModernText(form_content, height=6, wrap=tk.WORD)
+        self.notes_text.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+        # Buttons row
+        button_row = ModernFrame(form_content, bg_color=self.colors['card_bg'])
+        button_row.pack(fill=tk.X, pady=(10, 0))
+        
+        # Create buttons with explicit styling to override macOS defaults
+        save_btn = tk.Button(button_row, 
+                            text="💾 Save Check", 
+                            command=self.save_check,
+                            bg=self.colors['success'], 
+                            fg='#ffffff',
+                            activebackground='#218838', 
+                            activeforeground='#ffffff',
+                            relief='flat',
+                            bd=0,
+                            font=('Segoe UI', 11),
+                            cursor='hand2',
+                            padx=15,
+                            pady=8)
+        save_btn.pack(side=tk.LEFT, padx=(0, 15))
+        
+        clear_btn = tk.Button(button_row, 
+                             text="🗑️ Clear Form", 
+                             command=self.clear_form,
+                             bg=self.colors['danger'], 
+                             fg='#ffffff',
+                             activebackground='#c82333', 
+                             activeforeground='#ffffff',
+                             relief='flat',
+                             bd=0,
+                             font=('Segoe UI', 11),
+                             cursor='hand2',
+                             padx=15,
+                             pady=8)
+        clear_btn.pack(side=tk.LEFT)
+        
+        # Pack scrollable content
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Initialize with current date/time
+        self.set_current_datetime()
+        
+        # Store canvas reference for tab refresh
+        self.entry_canvas = canvas
+        
+        # Force initial update and ensure proper scrolling setup
+        def setup_scrolling():
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.update_idletasks()
+            setup_mousewheel()
+        
+        self.root.after(50, setup_scrolling)
+    
+    def create_history_tab(self, parent):
+        """Create the history viewing tab with modern styling"""
+        self.history_frame = ModernFrame(parent, bg_color=self.colors['bg'])
+        parent.add(self.history_frame, text="📊 History")
+        
+        # History section
+        history_section, history_content = self.create_modern_section(self.history_frame, "Check History")
+        
+        # Controls row
+        controls_row = ModernFrame(history_content, bg_color=self.colors['card_bg'])
+        controls_row.pack(fill=tk.X, pady=(0, 15))
+        
+        export_btn = ModernButton(controls_row, text="📤 Export CSV", command=self.export_to_csv)
+        export_btn.pack(side=tk.LEFT, padx=(0, 10))
+        
+        delete_btn = ModernButton(controls_row, text="🗑️ Delete Selected", 
+                                 command=self.delete_selected_record, bg=self.colors['danger'])
+        delete_btn.pack(side=tk.LEFT, padx=(0, 10))
+        
+        refresh_btn = ModernButton(controls_row, text="🔄 Refresh", command=self.refresh_history)
+        refresh_btn.pack(side=tk.LEFT)
+        
+        # History list container
+        list_container = ModernFrame(history_content, bg_color=self.colors['input_bg'])
+        list_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Treeview for history
+        columns = ("ID", "Date/Time", "Outcome", "Notes")
+        self.history_tree = ttk.Treeview(list_container, columns=columns, show="headings", height=15)
+        
+        # Configure columns
+        self.history_tree.heading("ID", text="ID")
+        self.history_tree.heading("Date/Time", text="Date/Time")
+        self.history_tree.heading("Outcome", text="Outcome")
+        self.history_tree.heading("Notes", text="Notes")
+        
+        self.history_tree.column("ID", width=60)
+        self.history_tree.column("Date/Time", width=180)
+        self.history_tree.column("Outcome", width=150)
+        self.history_tree.column("Notes", width=300)
+        
+        # Scrollbar for treeview
+        tree_scrollbar = ttk.Scrollbar(list_container, orient=tk.VERTICAL, command=self.history_tree.yview)
+        self.history_tree.configure(yscrollcommand=tree_scrollbar.set)
+        
+        # Pack treeview and scrollbar
+        self.history_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+        tree_scrollbar.pack(side=tk.RIGHT, fill=tk.Y, pady=10, padx=(0, 10))
+        
+        # Bind double-click to view details
+        self.history_tree.bind("<Double-1>", self.on_history_double_click)
+    
+    def create_queries_tab(self, parent):
+        """Create the AWS queries tab with modern styling"""
+        self.queries_frame = ModernFrame(parent, bg_color=self.colors['bg'])
+        parent.add(self.queries_frame, text="🔍 AWS Queries")
+        
+        # Create scrollable frame
+        canvas = tk.Canvas(self.queries_frame, bg=self.colors['bg'], highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self.queries_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ModernFrame(canvas, bg_color=self.colors['bg'])
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Enhanced mousewheel scrolling for macOS
+        def _on_mousewheel(event):
+            if hasattr(event, 'delta') and event.delta:
+                # Windows/macOS with delta
+                canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+            elif hasattr(event, 'num'):
+                # Linux scroll events
+                if event.num == 4:
+                    canvas.yview_scroll(-1, "units")
+                elif event.num == 5:
+                    canvas.yview_scroll(1, "units")
+        
+        # Bind mousewheel to the entire tab area
+        def bind_mousewheel_to_all(widget):
+            try:
+                widget.bind("<MouseWheel>", _on_mousewheel, add=True)
+                widget.bind("<Button-4>", _on_mousewheel, add=True)
+                widget.bind("<Button-5>", _on_mousewheel, add=True)
+                for child in widget.winfo_children():
+                    bind_mousewheel_to_all(child)
+            except:
+                pass
+        
+        # Apply comprehensive mousewheel binding
+        def setup_mousewheel():
+            bind_mousewheel_to_all(self.queries_frame)
+            bind_mousewheel_to_all(canvas)
+            bind_mousewheel_to_all(scrollable_frame)
+        
+        # CloudWatch Insights Queries
+        insights_section, insights_content = self.create_modern_section(scrollable_frame, "CloudWatch Insights Queries")
+        
+        self.add_modern_query_section(insights_content, "🔴 Error Detection", 
             "fields @timestamp, @message\n"
             "| filter @message like /(?i)(error|exception|fail|failed)/\n"
             "| sort @timestamp desc\n"
             "| limit 10")
         
-        self.add_query_section(insights_frame, "Performance Issues", 
+        self.add_modern_query_section(insights_content, "⚡ Performance Issues", 
             "fields @timestamp, @message, elapsed_ms\n"
             "| filter ispresent(elapsed_ms)\n"
             "| sort elapsed_ms desc\n"
             "| limit 10")
         
-        
-        self.add_query_section(insights_frame, "Memory Usage", 
+        self.add_modern_query_section(insights_content, "💾 Memory Usage", 
             "fields @timestamp, @message\n"
             "| filter @message like /memory/\n"
             "| sort @timestamp desc\n"
             "| limit 10")
         
         # AWS CLI Commands
-        cli_frame = ttk.LabelFrame(scrollable_frame, text="AWS CLI Commands", padding="10")
-        cli_frame.pack(fill=tk.X, pady=(0, 15))
+        cli_section, cli_content = self.create_modern_section(scrollable_frame, "AWS CLI Commands")
         
-        self.add_query_section(cli_frame, "CloudTrail Failed Logins",
+        self.add_modern_query_section(cli_content, "🔐 CloudTrail Failed Logins",
             "aws logs start-query \\\n"
             "--log-group-name YOUR_CLOUDTRAIL_LOG_GROUP \\\n"
             "--start-time $(date -v-2H +%s) \\\n"
             "--end-time $(date +%s) \\\n"
             '--query-string "fields @timestamp, @message | filter eventName = \'ConsoleLogin\' and errorMessage = \'Failed authentication\'"')
         
-        self.add_query_section(cli_frame, "SSM Session History",
+        self.add_modern_query_section(cli_content, "🖥️ SSM Session History",
             "aws ssm describe-sessions \\\n"
             '--state "History" \\\n'
             "--filters key=Owner,value=* \\\n"
             '--query "Sessions[?StartDate>=`date -v-2H +%Y-%m-%dT%H:%M:%SZ`].[SessionId,Owner,StartDate]" \\\n'
             "--output table")
         
-        self.add_query_section(cli_frame, "Unhealthy Target Groups",
-            "aws cloudwatch get-metric-statistics \\\n"
-            "--namespace AWS/ApplicationELB \\\n"
-            "--metric-name UnHealthyHostCount \\\n"
-            "--dimensions Name=TargetGroup,Value=YOUR_TARGET_GROUP_ARN \\\n"
-            "--start-time $(date -v-2H +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--period 300 \\\n"
-            "--statistics Sum")
-        
-        self.add_query_section(cli_frame, "Load Balancer 5XX Errors",
-            "aws cloudwatch get-metric-statistics \\\n"
-            "--namespace AWS/ApplicationELB \\\n"
-            "--metric-name HTTPCode_Target_5XX_Count \\\n"
-            "--dimensions Name=LoadBalancer,Value=YOUR_LOAD_BALANCER_ARN \\\n"
-            "--start-time $(date -v-2H +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--period 300 \\\n"
-            "--statistics Sum")
-        
-        # Additional Monitoring
-        monitoring_frame = ttk.LabelFrame(scrollable_frame, text="Additional Monitoring", padding="10")
-        monitoring_frame.pack(fill=tk.X, pady=(0, 15))
-        
-        self.add_query_section(monitoring_frame, "RDS Performance",
-            "aws cloudwatch get-metric-statistics \\\n"
-            "--namespace AWS/RDS \\\n"
-            "--metric-name DatabaseConnections \\\n"
-            "--dimensions Name=DBInstanceIdentifier,Value=YOUR_DB_INSTANCE \\\n"
-            "--start-time $(date -v-1H +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--period 300 \\\n"
-            "--statistics Average,Maximum")
-        
-        self.add_query_section(monitoring_frame, "Lambda Errors",
-            "aws cloudwatch get-metric-statistics \\\n"
-            "--namespace AWS/Lambda \\\n"
-            "--metric-name Errors \\\n"
-            "--dimensions Name=FunctionName,Value=YOUR_FUNCTION_NAME \\\n"
-            "--start-time $(date -v-1H +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--period 300 \\\n"
-            "--statistics Sum")
-        
-        self.add_query_section(monitoring_frame, "EC2 CPU Utilization",
-            "aws cloudwatch get-metric-statistics \\\n"
-            "--namespace AWS/EC2 \\\n"
-            "--metric-name CPUUtilization \\\n"
-            "--dimensions Name=InstanceId,Value=YOUR_INSTANCE_ID \\\n"
-            "--start-time $(date -v-1H +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--end-time $(date +%Y-%m-%dT%H:%M:%SZ) \\\n"
-            "--period 300 \\\n"
-            "--statistics Average,Maximum")
+        # Apply mousewheel to new content
+        bind_mousewheel_to_all(insights_content)
+        bind_mousewheel_to_all(cli_content)
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+        
+        # Store canvas reference for tab refresh
+        self.queries_canvas = canvas
+        
+        # Force initial update and ensure proper scrolling setup
+        def setup_scrolling():
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.update_idletasks()
+            setup_mousewheel()
+        
+        self.root.after(50, setup_scrolling)
     
-    def add_query_section(self, parent, title, query):
-        """Add a query section with copy button"""
-        section_frame = ttk.Frame(parent)
-        section_frame.pack(fill=tk.X, pady=(0, 10))
+    def add_modern_query_section(self, parent, title, query):
+        """Add a modern query section with copy button"""
+        # Query container
+        query_container = ModernFrame(parent, bg_color=self.colors['input_bg'])
+        query_container.pack(fill=tk.X, pady=10)
         
-        # Title and copy button
-        header_frame = ttk.Frame(section_frame)
-        header_frame.pack(fill=tk.X, pady=(0, 5))
+        # Header with title and copy button
+        header_frame = ModernFrame(query_container, bg_color=self.colors['input_bg'])
+        header_frame.pack(fill=tk.X, padx=15, pady=(15, 10))
         
-        ttk.Label(header_frame, text=title, font=("Arial", 11, "bold")).pack(side=tk.LEFT)
-        ttk.Button(header_frame, text="Copy", 
-                  command=lambda: self.copy_to_clipboard(query)).pack(side=tk.RIGHT)
+        title_label = ModernLabel(header_frame, text=title, font=('Segoe UI', 12, 'bold'),
+                                 bg=self.colors['input_bg'])
+        title_label.pack(side=tk.LEFT)
+        
+        copy_btn = ModernButton(header_frame, text="📋 Copy", 
+                               command=lambda: self.copy_to_clipboard(query),
+                               bg=self.colors['success'])
+        copy_btn.pack(side=tk.RIGHT)
         
         # Query text
-        query_text = tk.Text(section_frame, height=len(query.split('\n')), wrap=tk.WORD, 
-                            font=("Consolas", 10), state=tk.DISABLED)
-        query_text.pack(fill=tk.X, pady=(0, 5))
+        query_text = tk.Text(query_container, height=len(query.split('\n')), wrap=tk.WORD,
+                           font=('Consolas', 10), state=tk.DISABLED,
+                           bg=self.colors['card_bg'], fg=self.colors['text'],
+                           relief='flat', bd=0)
+        query_text.pack(fill=tk.X, padx=15, pady=(0, 15))
         
         # Insert query text
         query_text.config(state=tk.NORMAL)
         query_text.insert(1.0, query)
         query_text.config(state=tk.DISABLED)
-        
-        # Apply theme
-        if self.dark_mode:
-            query_text.configure(bg="#2d2d2d", fg="#e6e6e6")
-        else:
-            query_text.configure(bg="#f8f8f8", fg="#000000")
-    
-    def copy_to_clipboard(self, text):
-        """Copy text to clipboard"""
-        self.root.clipboard_clear()
-        self.root.clipboard_append(text)
-        self.root.update()  # Required for clipboard to work
-        
-        # Show brief confirmation
-        messagebox.showinfo("Copied", "Query copied to clipboard!")
     
     def create_evidence_tab(self, parent):
-        """Create the evidence pack tab"""
-        self.evidence_frame = ttk.Frame(parent)
-        parent.add(self.evidence_frame, text="Evidence Pack")
-        
-        # Main container
-        main_frame = ttk.Frame(self.evidence_frame)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Title
-        ttk.Label(main_frame, text="Evidence Pack Template", 
-                 font=("Arial", 16, "bold")).pack(pady=(0, 20))
-        
-        # Buttons frame
-        button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        ttk.Button(button_frame, text="Copy Template", 
-                  command=self.copy_evidence_template).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(button_frame, text="Save to File", 
-                  command=self.save_evidence_to_file).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(button_frame, text="Load from File", 
-                  command=self.load_evidence_from_file).pack(side=tk.LEFT)
-        
-        # Evidence pack content
-        content_frame = ttk.LabelFrame(main_frame, text="Evidence Documentation Template", padding="10")
-        content_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Create scrollable text area
-        self.evidence_text = scrolledtext.ScrolledText(content_frame, wrap=tk.WORD, 
-                                                      font=("Consolas", 10))
-        self.evidence_text.pack(fill=tk.BOTH, expand=True)
-        
-        # Load evidence pack content
-        self.load_evidence_pack_content()
-    
-    def load_evidence_pack_content(self):
-        """Load the evidence pack template content"""
-        try:
-            from config import EVIDENCE_PACK_PATH
+        """Create the evidence pack tab with modern styling"""
+        if EVIDENCE_PACK_AVAILABLE:
+            # Use CustomTkinter for the evidence pack tab
+            self.evidence_frame = ctk.CTkFrame(parent, fg_color="transparent")
+            parent.add(self.evidence_frame, text="📋 Evidence Pack")
             
-            if hasattr(self, 'evidence_text'):
-                self.evidence_text.delete(1.0, tk.END)
-                
-                try:
-                    with open(EVIDENCE_PACK_PATH, 'r', encoding='utf-8') as f:
-                        content = f.read()
-                    self.evidence_text.insert(1.0, content)
-                except FileNotFoundError:
-                    # If file doesn't exist, show default template
-                    default_content = self.get_default_evidence_template()
-                    self.evidence_text.insert(1.0, default_content)
-                except Exception as e:
-                    self.evidence_text.insert(1.0, f"Error loading evidence pack: {str(e)}")
-                
-                # Apply theme
-                if self.dark_mode:
-                    self.evidence_text.configure(bg="#2d2d2d", fg="#e6e6e6", insertbackground="#e6e6e6")
-                else:
-                    self.evidence_text.configure(bg="#f8f8f8", fg="#000000", insertbackground="#000000")
-        
-        except Exception as e:
-            print(f"Error loading evidence pack content: {e}")
-    
-    def get_default_evidence_template(self):
-        """Get default evidence template if file is not available"""
-        return """AWS Log Checker Helper - Evidence Pack
-
-This file contains templates and examples for documenting log check findings.
-
-EVIDENCE DOCUMENTATION TEMPLATE:
-=================================
-
-Date/Time: [YYYY-MM-DD HH:MM:SS]
-Checker: [Your Name]
-Environment: [Production/Staging/Development]
-AWS Account: [Account ID or Name]
-
-LOG SOURCES CHECKED:
-- CloudWatch Logs: [Log Group Names]
-- CloudTrail: [Trail Names]
-- Application Logs: [Service Names]
-- Security Logs: [WAF, GuardDuty, etc.]
-
-FINDINGS:
-- [Finding 1]: Description and impact
-- [Finding 2]: Description and impact
-- [Finding 3]: Description and impact
-
-ACTIONS TAKEN:
-- [Action 1]: Description
-- [Action 2]: Description
-
-FOLLOW-UP REQUIRED:
-- [Item 1]: Due date and owner
-- [Item 2]: Due date and owner
-
-SCREENSHOTS/LOGS:
-[Attach or reference any supporting evidence]
-
-SIGN-OFF:
-Checked by: [Name]
-Reviewed by: [Name]
-Date: [YYYY-MM-DD]
-
-=================================
-
-COMMON AWS LOG LOCATIONS:
-- /aws/lambda/[function-name]
-- /aws/apigateway/[api-name]
-- /aws/rds/instance/[db-instance]/error
-- /aws/ecs/containerinsights/[cluster]/[service]
-- CloudTrail: [account-id]_CloudTrail_[region]
-
-USEFUL CLOUDWATCH INSIGHTS QUERIES:
-See the AWS Queries tab in the application for ready-to-use query templates."""
-    
-    def copy_evidence_template(self):
-        """Copy evidence template to clipboard"""
-        content = self.evidence_text.get(1.0, tk.END).strip()
-        self.root.clipboard_clear()
-        self.root.clipboard_append(content)
-        self.root.update()
-        messagebox.showinfo("Copied", "Evidence template copied to clipboard!")
-    
-    def save_evidence_to_file(self):
-        """Save evidence content to a file"""
-        try:
-            from tkinter import filedialog
+            # Create the evidence pack generator
+            self.evidence_pack_generator = EvidencePackTab(self.evidence_frame)
+            self.evidence_pack_generator.pack(fill="both", expand=True)
+        else:
+            # Fallback message if customtkinter is not available
+            self.evidence_frame = ModernFrame(parent, bg_color=self.colors['bg'])
+            parent.add(self.evidence_frame, text="📋 Evidence Pack")
             
-            filename = filedialog.asksaveasfilename(
-                title="Save Evidence Documentation",
-                defaultextension=".txt",
-                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-                initialfile=f"evidence_pack_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+            unavailable_section, unavailable_content = self.create_modern_section(
+                self.evidence_frame, "Evidence Pack Generator"
             )
             
-            if filename:
-                content = self.evidence_text.get(1.0, tk.END)
-                with open(filename, 'w', encoding='utf-8') as f:
-                    f.write(content)
-                messagebox.showinfo("Success", f"Evidence documentation saved to:\n{filename}")
-                
-        except Exception as e:
-            messagebox.showerror("Error", f"Error saving file: {str(e)}")
-    
-    def load_evidence_from_file(self):
-        """Load evidence content from a file"""
-        try:
-            from tkinter import filedialog
-            
-            filename = filedialog.askopenfilename(
-                title="Load Evidence Documentation",
-                filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+            message_label = ModernLabel(
+                unavailable_content,
+                text="Evidence Pack Generator is not available.\n\n"
+                     "To enable this feature, please install the required dependencies:\n"
+                     "pip install customtkinter pyperclip",
+                font=('Segoe UI', 12),
+                justify=tk.CENTER,
+                bg=self.colors['card_bg']
             )
-            
-            if filename:
-                with open(filename, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
-                self.evidence_text.delete(1.0, tk.END)
-                self.evidence_text.insert(1.0, content)
-                messagebox.showinfo("Success", "Evidence documentation loaded successfully!")
-                
-        except Exception as e:
-            messagebox.showerror("Error", f"Error loading file: {str(e)}")
+            message_label.pack(pady=50, padx=20)
     
     def create_settings_tab(self, parent):
-        """Create the settings tab"""
-        self.settings_frame = ttk.Frame(parent)
-        parent.add(self.settings_frame, text="Settings")
+        """Create the settings tab with modern styling"""
+        self.settings_frame = ModernFrame(parent, bg_color=self.colors['bg'])
+        parent.add(self.settings_frame, text="⚙️ Settings")
         
-        # Main container
-        main_frame = ttk.Frame(self.settings_frame)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        # Create scrollable content
+        canvas = tk.Canvas(self.settings_frame, bg=self.colors['bg'], highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self.settings_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ModernFrame(canvas, bg_color=self.colors['bg'])
         
-        # Title
-        ttk.Label(main_frame, text="Application Settings", 
-                 font=("Arial", 16, "bold")).pack(pady=(0, 20))
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
         
-        # Reminder settings
-        reminder_frame = ttk.LabelFrame(main_frame, text="Reminder Settings", padding="10")
-        reminder_frame.pack(fill=tk.X, pady=(0, 20))
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Enhanced mousewheel scrolling for macOS
+        def _on_mousewheel(event):
+            if hasattr(event, 'delta') and event.delta:
+                # Windows/macOS with delta
+                canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+            elif hasattr(event, 'num'):
+                # Linux scroll events
+                if event.num == 4:
+                    canvas.yview_scroll(-1, "units")
+                elif event.num == 5:
+                    canvas.yview_scroll(1, "units")
+        
+        # Bind mousewheel to the entire tab area
+        def bind_mousewheel_to_all(widget):
+            try:
+                widget.bind("<MouseWheel>", _on_mousewheel, add=True)
+                widget.bind("<Button-4>", _on_mousewheel, add=True)
+                widget.bind("<Button-5>", _on_mousewheel, add=True)
+                for child in widget.winfo_children():
+                    bind_mousewheel_to_all(child)
+            except:
+                pass
+        
+        # Apply comprehensive mousewheel binding
+        def setup_mousewheel():
+            bind_mousewheel_to_all(self.settings_frame)
+            bind_mousewheel_to_all(canvas)
+            bind_mousewheel_to_all(scrollable_frame)
+        
+        # Reminder Settings Section
+        reminder_section, reminder_content = self.create_modern_section(scrollable_frame, "Reminder Settings")
+        
+        # Enable reminders checkbox
+        reminder_row = ModernFrame(reminder_content, bg_color=self.colors['card_bg'])
+        reminder_row.pack(fill=tk.X, pady=10)
+        
+        self.reminder_enabled_var = tk.BooleanVar(value=True)
+        reminder_check = tk.Checkbutton(
+            reminder_row,
+            text="Enable automatic check reminders",
+            variable=self.reminder_enabled_var,
+            command=self.toggle_reminders,
+            bg=self.colors['card_bg'],
+            fg=self.colors['text'],
+            selectcolor=self.colors['input_bg'],
+            activebackground=self.colors['card_bg'],
+            activeforeground=self.colors['text'],
+            font=('Segoe UI', 11)
+        )
+        reminder_check.pack(side=tk.LEFT)
         
         # Reminder interval
-        interval_frame = ttk.Frame(reminder_frame)
-        interval_frame.pack(fill=tk.X, pady=(0, 10))
+        interval_row = ModernFrame(reminder_content, bg_color=self.colors['card_bg'])
+        interval_row.pack(fill=tk.X, pady=10)
         
-        ttk.Label(interval_frame, text="Reminder Interval (hours):").pack(side=tk.LEFT)
-        self.interval_var = tk.StringVar(value=str(self.reminder_manager.get_interval()))
-        interval_spinbox = ttk.Spinbox(interval_frame, from_=1, to=24, width=5, 
-                                      textvariable=self.interval_var, 
-                                      command=self.on_interval_changed)
-        interval_spinbox.pack(side=tk.LEFT, padx=(10, 5))
-        interval_spinbox.bind('<Return>', lambda e: self.on_interval_changed())
-        interval_spinbox.bind('<FocusOut>', lambda e: self.on_interval_changed())
+        ModernLabel(interval_row, text="Reminder interval (hours):", bg=self.colors['card_bg']).pack(side=tk.LEFT)
+        self.reminder_interval_var = tk.StringVar(value="24")
+        interval_spinbox = ttk.Spinbox(
+            interval_row,
+            from_=1, to=168, width=10,
+            textvariable=self.reminder_interval_var,
+            command=self.update_reminder_interval
+        )
+        interval_spinbox.pack(side=tk.LEFT, padx=(15, 0))
         
-        # Reminder status
-        status_frame = ttk.Frame(reminder_frame)
-        status_frame.pack(fill=tk.X, pady=(0, 10))
+        # Database Settings Section
+        db_section, db_content = self.create_modern_section(scrollable_frame, "Database Settings")
         
-        self.reminder_status_var = tk.StringVar(value="Stopped")
-        ttk.Label(status_frame, text="Status:").pack(side=tk.LEFT)
-        self.status_label = ttk.Label(status_frame, textvariable=self.reminder_status_var)
-        self.status_label.pack(side=tk.LEFT, padx=(10, 0))
+        # Database location
+        db_row = ModernFrame(db_content, bg_color=self.colors['card_bg'])
+        db_row.pack(fill=tk.X, pady=10)
         
-        # Reminder controls
-        control_frame = ttk.Frame(reminder_frame)
-        control_frame.pack(fill=tk.X)
+        ModernLabel(db_row, text="Database location:", bg=self.colors['card_bg']).pack(side=tk.LEFT)
+        db_location_label = ModernLabel(
+            db_row, 
+            text=self.db.db_path, 
+            font=('Consolas', 10),
+            fg=self.colors['text_secondary'],
+            bg=self.colors['card_bg']
+        )
+        db_location_label.pack(side=tk.LEFT, padx=(15, 0))
         
-        self.start_button = ttk.Button(control_frame, text="Start Reminders", 
-                                      command=self.start_reminders)
-        self.start_button.pack(side=tk.LEFT, padx=(0, 5))
+        # Database actions
+        db_actions_row = ModernFrame(db_content, bg_color=self.colors['card_bg'])
+        db_actions_row.pack(fill=tk.X, pady=(15, 0))
         
-        self.stop_button = ttk.Button(control_frame, text="Stop Reminders", 
-                                     command=self.stop_reminders, state=tk.DISABLED)
-        self.stop_button.pack(side=tk.LEFT, padx=(0, 5))
+        backup_btn = ModernButton(db_actions_row, text="💾 Backup Database", command=self.backup_database,
+                                 bg=self.colors['accent'], fg='#ffffff')
+        backup_btn.pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Button(control_frame, text="Test Reminder", 
-                  command=self.test_reminder).pack(side=tk.LEFT)
+        clean_btn = ModernButton(db_actions_row, text="🧹 Clean Old Records", 
+                                command=self.clean_old_records, bg=self.colors['warning'], fg='#000000')
+        clean_btn.pack(side=tk.LEFT)
         
-        # Theme toggle
-        theme_frame = ttk.LabelFrame(main_frame, text="Appearance", padding="10")
-        theme_frame.pack(fill=tk.X, pady=(0, 20))
+        # Application Info Section
+        info_section, info_content = self.create_modern_section(scrollable_frame, "Application Information")
         
-        ttk.Button(theme_frame, text="Toggle Light/Dark Mode", 
-                  command=self.toggle_theme).pack(side=tk.LEFT)
+        # Version info
+        version_label = ModernLabel(
+            info_content,
+            text=f"{APP_NAME}\nVersion 1.0.0\n\nA tool for tracking AWS log checks and generating evidence packs.",
+            justify=tk.LEFT,
+            bg=self.colors['card_bg']
+        )
+        version_label.pack(pady=10, anchor="w")
         
-        # Info
-        info_frame = ttk.LabelFrame(main_frame, text="Information", padding="10")
-        info_frame.pack(fill=tk.X)
+        # Apply mousewheel to new content
+        bind_mousewheel_to_all(reminder_content)
+        bind_mousewheel_to_all(db_content)
+        bind_mousewheel_to_all(info_content)
         
-        info_text = ("• Reminders will appear every 2 hours when active\n"
-                    "• You can snooze reminders for 10 minutes\n"
-                    "• Data is stored locally in your home directory\n"
-                    "• Use 'Test Reminder' to see how notifications work")
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
         
-        ttk.Label(info_frame, text=info_text, justify=tk.LEFT).pack(anchor=tk.W)
+        # Store canvas reference for tab refresh
+        self.settings_canvas = canvas
+        
+        # Force initial update and ensure proper scrolling setup
+        def setup_scrolling():
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.update_idletasks()
+            setup_mousewheel()
+        
+        self.root.after(50, setup_scrolling)
     
-    def create_evidence_pack_tab(self, parent):
-        """Create the Evidence Pack Generator tab"""
-        if not EVIDENCE_PACK_AVAILABLE:
-            return
-            
-        try:
-            # Set customtkinter appearance to match the current theme
-            if self.dark_mode:
-                ctk.set_appearance_mode("dark")
-            else:
-                ctk.set_appearance_mode("light")
-            ctk.set_default_color_theme("blue")
-            
-            # Create tab frame
-            self.evidence_frame = ttk.Frame(parent)
-            parent.add(self.evidence_frame, text="Evidence Pack Generator")
-            
-            # Create the Evidence Pack generator inside the ttk frame
-            self.evidence_pack = EvidencePackTab(self.evidence_frame)
-            self.evidence_pack.pack(fill=tk.BOTH, expand=True)
-            
-        except Exception as e:
-            print(f"Error creating Evidence Pack tab: {e}")
-            # If there's an error, create a simple error message tab
-            error_frame = ttk.Frame(parent)
-            parent.add(error_frame, text="Evidence Pack (Error)")
-            
-            error_label = ttk.Label(error_frame, 
-                                  text=f"Evidence Pack Generator unavailable:\n{str(e)}\n\nPlease install: pip install customtkinter pyperclip",
-                                  justify=tk.CENTER)
-            error_label.pack(expand=True)
-    
-    def setup_reminder_system(self):
-        """Setup the reminder system callbacks"""
-        self.reminder_manager.set_reminder_callback(self.on_reminder_triggered)
-    
+    # Event handlers and utility methods
     def set_current_datetime(self):
-        """Set the datetime field to current date and time"""
-        current_dt = datetime.datetime.now()
-        self.datetime_var.set(current_dt.strftime("%Y-%m-%d %H:%M:%S"))
-    
-    def clear_form(self):
-        """Clear the entry form"""
-        self.set_current_datetime()
-        self.outcome_combo.set(CHECK_OUTCOMES[0])
-        self.notes_text.delete(1.0, tk.END)
+        """Set current date and time in the entry field"""
+        now = datetime.datetime.now()
+        self.datetime_var.set(now.strftime("%Y-%m-%d %H:%M:%S"))
     
     def save_check(self):
-        """Save the current check entry"""
+        """Save a log check to the database"""
         try:
-            # Parse datetime
+            # Get values
             datetime_str = self.datetime_var.get().strip()
+            outcome = self.outcome_var.get()
+            notes = self.notes_text.get("1.0", tk.END).strip()
+            
+            # Validate inputs
             if not datetime_str:
-                messagebox.showerror("Error", "Please enter a date and time")
+                messagebox.showerror("Error", "Please enter a date and time.")
                 return
             
+            if not outcome:
+                messagebox.showerror("Error", "Please select an outcome.")
+                return
+            
+            # Parse datetime
             try:
                 check_datetime = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
             except ValueError:
-                messagebox.showerror("Error", "Invalid date/time format. Use: YYYY-MM-DD HH:MM:SS")
+                messagebox.showerror("Error", "Invalid date/time format. Use YYYY-MM-DD HH:MM:SS")
                 return
-            
-            # Get outcome
-            outcome = self.outcome_var.get()
-            if not outcome:
-                messagebox.showerror("Error", "Please select an outcome")
-                return
-            
-            # Get notes
-            notes = self.notes_text.get(1.0, tk.END).strip()
             
             # Save to database
-            record_id = self.db.add_check_record(outcome, notes, check_datetime)
+            self.db.add_check(check_datetime, outcome, notes)
             
-            if record_id:
-                messagebox.showinfo("Success", "Check record saved successfully!")
-                self.clear_form()
-                self.refresh_history()
-            else:
-                messagebox.showerror("Error", "Failed to save check record")
-                
+            # Refresh history and clear form
+            self.refresh_history()
+            self.clear_form()
+            
+            # Show success message
+            messagebox.showinfo("Success", "Log check saved successfully!")
+            
         except Exception as e:
-            messagebox.showerror("Error", f"Error saving check: {str(e)}")
+            messagebox.showerror("Error", f"Failed to save check: {str(e)}")
+    
+    def clear_form(self):
+        """Clear the entry form"""
+        self.notes_text.delete("1.0", tk.END)
+        self.outcome_combo.set(CHECK_OUTCOMES[0])
+        self.set_current_datetime()
     
     def refresh_history(self):
-        """Refresh the history list"""
+        """Refresh the history display"""
         try:
             # Clear existing items
             for item in self.history_tree.get_children():
                 self.history_tree.delete(item)
             
-            # Get recent records
-            records = self.db.get_check_records(limit=100)
-            
-            # Add records to tree
+            # Get and display records
+            records = self.db.get_all_checks()
             for record in records:
-                # Format datetime
-                dt = datetime.datetime.fromisoformat(record['timestamp'])
-                dt_str = dt.strftime("%Y-%m-%d %H:%M")
-                
-                # Truncate notes for display
-                notes = record['notes'] or ""
-                if len(notes) > 50:
-                    notes = notes[:47] + "..."
-                
-                self.history_tree.insert("", tk.END, values=(record['id'], dt_str, record['outcome'], notes))
+                self.history_tree.insert("", "end", values=record)
                 
         except Exception as e:
-            messagebox.showerror("Error", f"Error loading history: {str(e)}")
-    
-    def export_to_csv(self):
-        """Export history to CSV file"""
-        try:
-            from tkinter import filedialog
-            
-            # Ask user where to save the file
-            filename = filedialog.asksaveasfilename(
-                title="Export History to CSV",
-                defaultextension=".csv",
-                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-                initialfile=f"aws_log_history_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-            )
-            
-            if filename:
-                # Export to CSV using database manager
-                if self.db.export_to_csv(filename):
-                    messagebox.showinfo("Success", f"History exported successfully to:\n{filename}")
-                else:
-                    messagebox.showerror("Error", "Failed to export history to CSV")
-                    
-        except Exception as e:
-            messagebox.showerror("Error", f"Error exporting to CSV: {str(e)}")
-    
-    def delete_selected_record(self):
-        """Delete the selected record(s) from history"""
-        selected_items = self.history_tree.selection()
-        if not selected_items:
-            messagebox.showwarning("Warning", "No records selected")
-            return
-        
-        # Get count for confirmation message
-        count = len(selected_items)
-        if count == 1:
-            confirm_msg = "Are you sure you want to delete this record?"
-        else:
-            confirm_msg = f"Are you sure you want to delete these {count} records?"
-        
-        confirm = messagebox.askyesno("Confirm Delete", confirm_msg)
-        if confirm:
-            try:
-                deleted_count = 0
-                for item_id in selected_items:
-                    item = self.history_tree.item(item_id)
-                    record_id = item['values'][0]
-                    if self.db.delete_check_record(record_id):
-                        deleted_count += 1
-                
-                self.refresh_history()
-                if deleted_count == count:
-                    if count == 1:
-                        messagebox.showinfo("Success", "Record deleted successfully")
-                    else:
-                        messagebox.showinfo("Success", f"{deleted_count} records deleted successfully")
-                else:
-                    messagebox.showwarning("Partial Success", 
-                                         f"Deleted {deleted_count} of {count} records. Some records may not have been found.")
-            except Exception as e:
-                messagebox.showerror("Error", f"Error deleting records: {str(e)}")
+            messagebox.showerror("Error", f"Failed to refresh history: {str(e)}")
     
     def on_history_double_click(self, event):
         """Handle double-click on history item"""
@@ -821,100 +829,210 @@ See the AWS Queries tab in the application for ready-to-use query templates."""
             item = self.history_tree.item(selection[0])
             values = item['values']
             
-            # Show detailed view
-            detail_window = tk.Toplevel(self.root)
-            detail_window.title("Check Details")
-            detail_window.geometry("400x300")
-            detail_window.resizable(False, False)
-            
-            # Details
-            frame = ttk.Frame(detail_window, padding="20")
-            frame.pack(fill=tk.BOTH, expand=True)
-            
-            ttk.Label(frame, text="Date/Time:", font=("Arial", 10, "bold")).pack(anchor=tk.W)
-            ttk.Label(frame, text=values[1]).pack(anchor=tk.W, pady=(0, 10))
-            
-            ttk.Label(frame, text="Outcome:", font=("Arial", 10, "bold")).pack(anchor=tk.W)
-            ttk.Label(frame, text=values[2]).pack(anchor=tk.W, pady=(0, 10))
-            
-            ttk.Label(frame, text="Notes:", font=("Arial", 10, "bold")).pack(anchor=tk.W)
-            notes_text = scrolledtext.ScrolledText(frame, height=8, wrap=tk.WORD, state=tk.DISABLED)
-            notes_text.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
-            
-            # Insert full notes (we need to get this from DB)
-            # For now, show what we have
-            notes_text.config(state=tk.NORMAL)
-            notes_text.insert(1.0, values[3])
-            notes_text.config(state=tk.DISABLED)
-            
-            # Apply theme to this window's ScrolledText
-            if self.dark_mode:
-                notes_text.configure(bg="#3c4043", fg="#e6e6e6")
-            else:
-                notes_text.configure(bg="#ffffff", fg="#000000")
-            
-            ttk.Button(frame, text="Close", command=detail_window.destroy).pack()
+            # Show details in a popup
+            self.show_check_details(values)
     
-    def start_reminders(self):
-        """Start the reminder system"""
-        self.reminder_manager.start()
-        self.reminder_status_var.set("Running")
-        self.start_button.config(state=tk.DISABLED)
-        self.stop_button.config(state=tk.NORMAL)
-    
-    def stop_reminders(self):
-        """Stop the reminder system"""
-        self.reminder_manager.stop()
-        self.reminder_status_var.set("Stopped")
-        self.start_button.config(state=tk.NORMAL)
-        self.stop_button.config(state=tk.DISABLED)
-    
-    def test_reminder(self):
-        """Test the reminder system"""
-        self.reminder_manager.test_reminder()
-    
-    def toggle_theme(self):
-        """Toggle between light and dark mode"""
-        self.dark_mode = not self.dark_mode
-        self.setup_theme()
+    def show_check_details(self, record):
+        """Show detailed view of a check record"""
+        details_window = tk.Toplevel(self.root)
+        details_window.title("Check Details")
+        details_window.geometry("500x400")
+        details_window.configure(bg=self.colors['bg'])
+        details_window.transient(self.root)
+        details_window.grab_set()
         
-        # Update customtkinter theme if Evidence Pack is available
-        if EVIDENCE_PACK_AVAILABLE:
+        # Content frame
+        content_frame = ModernFrame(details_window, bg_color=self.colors['card_bg'])
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Title
+        title_label = ModernLabel(content_frame, text="Check Details", 
+                                 font=('Segoe UI', 16, 'bold'), bg=self.colors['card_bg'])
+        title_label.pack(pady=(10, 20))
+        
+        # Details
+        details = [
+            ("ID:", record[0]),
+            ("Date/Time:", record[1]),
+            ("Outcome:", record[2])
+        ]
+        
+        for label, value in details:
+            row = ModernFrame(content_frame, bg_color=self.colors['card_bg'])
+            row.pack(fill=tk.X, pady=5)
+            
+            ModernLabel(row, text=label, font=('Segoe UI', 11, 'bold'), 
+                       bg=self.colors['card_bg']).pack(side=tk.LEFT)
+            ModernLabel(row, text=str(value), bg=self.colors['card_bg']).pack(side=tk.LEFT, padx=(10, 0))
+        
+        # Notes section
+        notes_label = ModernLabel(content_frame, text="Notes:", font=('Segoe UI', 11, 'bold'),
+                                 bg=self.colors['card_bg'])
+        notes_label.pack(pady=(20, 5), anchor="w")
+        
+        notes_text = ModernText(content_frame, height=8, wrap=tk.WORD)
+        notes_text.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        notes_text.insert("1.0", record[3] if record[3] else "No notes")
+        notes_text.config(state=tk.DISABLED)
+        
+        # Close button
+        close_btn = ModernButton(content_frame, text="Close", command=details_window.destroy)
+        close_btn.pack(pady=(10, 0))
+    
+    def delete_selected_record(self):
+        """Delete the selected history record"""
+        selection = self.history_tree.selection()
+        if not selection:
+            messagebox.showwarning("Warning", "Please select a record to delete.")
+            return
+        
+        # Confirm deletion
+        if messagebox.askyesno("Confirm", "Are you sure you want to delete this record?"):
             try:
-                if self.dark_mode:
-                    ctk.set_appearance_mode("dark")
-                else:
-                    ctk.set_appearance_mode("light")
+                item = self.history_tree.item(selection[0])
+                record_id = item['values'][0]
+                
+                self.db.delete_check(record_id)
+                self.refresh_history()
+                
+                messagebox.showinfo("Success", "Record deleted successfully!")
+                
             except Exception as e:
-                print(f"Error updating customtkinter theme: {e}")
+                messagebox.showerror("Error", f"Failed to delete record: {str(e)}")
     
-    def on_interval_changed(self):
-        """Handle changes to the reminder interval"""
+    def export_to_csv(self):
+        """Export history to CSV file"""
         try:
-            interval = int(self.interval_var.get())
-            self.reminder_manager.set_interval(interval)
-        except ValueError:
-            messagebox.showerror("Error", "Invalid interval value. Please enter a number between 1 and 24.")
+            from tkinter import filedialog
+            import csv
+            
+            # Get file path
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Export History to CSV"
+            )
+            
+            if file_path:
+                records = self.db.get_all_checks()
+                
+                with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(["ID", "Date/Time", "Outcome", "Notes"])
+                    writer.writerows(records)
+                
+                messagebox.showinfo("Success", f"History exported to {file_path}")
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export history: {str(e)}")
     
-    def on_reminder_triggered(self):
-        """Handle when user responds to a reminder by wanting to log a check"""
-        # Switch to the log entry tab
-        # Find the notebook and select the first tab
-        for widget in self.root.winfo_children():
-            if isinstance(widget, ttk.Notebook):
-                widget.select(0)  # Select first tab (Log Check)
-                break
-        
-        # Bring window to front
-        self.root.deiconify()
-        self.root.lift()
-        self.root.focus_force()
+    def copy_to_clipboard(self, text):
+        """Copy text to clipboard"""
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(text)
+            messagebox.showinfo("Success", "Query copied to clipboard!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to copy to clipboard: {str(e)}")
+    
+    def setup_reminder_system(self):
+        """Initialize the reminder system"""
+        try:
+            # Set up periodic reminders
+            self.reminder_manager.schedule_reminder(
+                hours=int(self.reminder_interval_var.get()),
+                message="Time for your regular AWS log check!"
+            )
+        except Exception as e:
+            print(f"Warning: Could not set up reminders: {e}")
+    
+    def toggle_reminders(self):
+        """Toggle reminder system on/off"""
+        if self.reminder_enabled_var.get():
+            self.setup_reminder_system()
+        else:
+            self.reminder_manager.cancel_reminders()
+    
+    def update_reminder_interval(self):
+        """Update reminder interval"""
+        if self.reminder_enabled_var.get():
+            self.setup_reminder_system()
+    
+    def backup_database(self):
+        """Create a backup of the database"""
+        try:
+            from tkinter import filedialog
+            import shutil
+            
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".db",
+                filetypes=[("Database files", "*.db"), ("All files", "*.*")],
+                title="Backup Database"
+            )
+            
+            if file_path:
+                shutil.copy2(self.db.db_path, file_path)
+                messagebox.showinfo("Success", f"Database backed up to {file_path}")
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to backup database: {str(e)}")
+    
+    def clean_old_records(self):
+        """Clean old records from the database"""
+        try:
+            # Ask for number of days
+            from tkinter import simpledialog
+            
+            days = simpledialog.askinteger(
+                "Clean Old Records",
+                "Delete records older than how many days?",
+                initialvalue=90,
+                minvalue=1,
+                maxvalue=365
+            )
+            
+            if days:
+                cutoff_date = datetime.datetime.now() - datetime.timedelta(days=days)
+                deleted_count = self.db.clean_old_records(cutoff_date)
+                
+                if deleted_count > 0:
+                    self.refresh_history()
+                    messagebox.showinfo("Success", f"Deleted {deleted_count} old records.")
+                else:
+                    messagebox.showinfo("Info", "No old records found to delete.")
+                    
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to clean old records: {str(e)}")
     
     def on_closing(self):
         """Handle application closing"""
-        self.stop_reminders()
-        self.root.destroy()
+        try:
+            # Clean up reminders
+            self.reminder_manager.cancel_reminders()
+            
+            # Close database connection
+            self.db.close()
+            
+            # Destroy window
+            self.root.destroy()
+            
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+            self.root.destroy()
     
     def run(self):
-        """Start the GUI application"""
-        self.root.mainloop()
+        """Start the application"""
+        try:
+            self.root.mainloop()
+        except KeyboardInterrupt:
+            self.on_closing()
+
+
+def main():
+    """Main entry point"""
+    app = MainWindow()
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
