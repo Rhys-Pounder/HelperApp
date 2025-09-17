@@ -289,11 +289,6 @@ class MainWindow:
             "| sort elapsed_ms desc\n"
             "| limit 10")
         
-        self.add_query_section(insights_frame, "Recent Requests", 
-            "fields @timestamp, @message\n"
-            "| filter @timestamp > @timestamp - 1h\n"
-            "| sort @timestamp desc\n"
-            "| limit 20")
         
         self.add_query_section(insights_frame, "Memory Usage", 
             "fields @timestamp, @message\n"
