@@ -12,8 +12,28 @@ from typing import Dict, List
 import tempfile
 import csv
 
+# Override database path for Docker environment
+import config
+DATABASE_PATH = os.path.join(os.getcwd(), 'data', 'checks.db')
+config.DATABASE_PATH = DATABASE_PATH
+
 app = Flask(__name__)
-db = DatabaseManager()
+
+# Create data directory if it doesn't exist
+os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
+
+# Add debugging
+print(f"Database path: {DATABASE_PATH}")
+print(f"Current working directory: {os.getcwd()}")
+print(f"Data directory exists: {os.path.exists(os.path.dirname(DATABASE_PATH))}")
+
+# Force the database to use the correct path by passing it explicitly
+class DockerDatabaseManager(DatabaseManager):
+    def __init__(self):
+        self.db_path = DATABASE_PATH
+        self.init_database()
+
+db = DockerDatabaseManager()
 
 # Check outcomes from config
 CHECK_OUTCOMES = [
@@ -35,34 +55,47 @@ def save_check():
     """Save a log check to the database"""
     try:
         data = request.json
+        print(f"Received save_check request with data: {data}")
+        
         datetime_str = data.get('datetime', '').strip()
         outcome = data.get('outcome', '')
         notes = data.get('notes', '').strip()
         
+        print(f"Parsed data - datetime: {datetime_str}, outcome: {outcome}, notes: {notes}")
+        
         if not datetime_str or not outcome:
+            print("Error: Missing datetime or outcome")
             return jsonify({'error': 'Date/time and outcome are required'}), 400
         
         # Parse datetime
         try:
             check_datetime = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+            print(f"Parsed datetime: {check_datetime}")
+        except ValueError as e:
+            print(f"DateTime parsing error: {e}")
             return jsonify({'error': 'Invalid date/time format. Use YYYY-MM-DD HH:MM:SS'}), 400
         
         # Save to database
+        print("Attempting to save to database...")
         record_id = db.add_check(check_datetime, outcome, notes)
+        print(f"Saved with record ID: {record_id}")
         
         return jsonify({'success': True, 'id': record_id})
         
     except Exception as e:
+        print(f"Exception in save_check: {e}")
         return jsonify({'error': f'Failed to save check: {str(e)}'}), 500
 
 @app.route('/api/get_history')
 def get_history():
     """Get check history"""
     try:
+        print("Getting history from database...")
         records = db.get_all_checks()
+        print(f"Retrieved {len(records)} records: {records}")
         return jsonify({'records': records})
     except Exception as e:
+        print(f"Exception in get_history: {e}")
         return jsonify({'error': f'Failed to get history: {str(e)}'}), 500
 
 @app.route('/api/delete_check/<int:record_id>', methods=['DELETE'])
