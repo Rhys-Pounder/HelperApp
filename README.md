@@ -1,189 +1,321 @@
-# AWS Log Checker Helper Application
+# AWS Log Checker Helper
 
-A Python GUI application that reminds users every 2 hours to check AWS logs and provides a convenient interface to log check results with persistent storage. Built to be run seamlessly on both **macOS** and **Linux** using Docker.
+A comprehensive tool for tracking AWS log checks and generating professional evidence packs. Available as both a desktop GUI application and a cross-platform web application.
 
+## 🌟 Features
 
+- **Log Check Tracking**: Record and manage AWS log check sessions with timestamps, outcomes, and detailed notes
+- **Evidence Pack Generation**: Create professional documentation with dynamic sections for findings, actions, and follow-ups
+- **AWS Query Library**: Pre-built CloudWatch Insights queries and AWS CLI commands for common troubleshooting scenarios
+- **History Management**: View, search, export, and manage historical check records
+- **Reminder System**: Automated reminders for scheduled log checks (desktop version)
+- **Modern UI**: Dark theme with responsive design and intuitive navigation
+- **Cross-Platform**: Available as desktop app (macOS/Windows/Linux) and web app (Docker)
 
-## Features
+## 🚀 Quick Start
 
--   **Cross-Platform with Docker**: A single script provides a native experience on both macOS and Linux.
--   **Automatic Reminders**: Get reminded every 2 hours to check AWS logs.
--   **User-Friendly GUI**: Clean, tabbed interface built with tkinter.
--   **Data Entry Form**: Log check results with timestamp, outcome, and notes.
--   **Persistent Storage**: SQLite database stores all check records locally on your machine.
--   **Check History**: View and review previous log checks.
--   **Snooze Functionality**: Snooze reminders for 10 minutes.
+### Option 1: Web Application (Recommended - No Dependencies)
 
-***
-
-## Getting Started with Docker (Recommended)
-
-This method packages the application and its dependencies into a container, providing the most reliable and consistent experience.
-
-### 1. Prerequisites
-
-First, you'll need to install the necessary tools for your operating system.
-
-#### For macOS 🍏
-
-1.  **Install Docker Desktop**: Download and install from the [official Docker website](https://www.docker.com/products/docker-desktop/).
-2.  **Install XQuartz**: This allows your Mac to display graphical applications from the container. The easiest way is using [Homebrew](https://brew.sh/):
-    ```bash
-    brew install --cask xquartz
-    ```
-3.  **Configure XQuartz**:
-    * Run the **XQuartz** application.
-    * Go to **XQuartz > Settings > Security**.
-    * Ensure **"Allow connections from network clients"** is checked.
-    * Restart XQuartz after changing the setting.
-
-#### For Linux (Ubuntu/Debian) 🐧
-
-1.  **Install Docker Engine**: Follow the official guide to install Docker for your distribution. For Ubuntu, you can find the instructions [here](https://docs.docker.com/engine/install/ubuntu/).
-2.  **Install `x11-xserver-utils`** (if not already present): This provides the `xhost` utility needed for display permissions.
-    ```bash
-    sudo apt-get update && sudo apt-get install x11-xserver-utils
-    ```
-
----
-
-### 2. Installation and Usage
-
-Once the prerequisites are installed, running the application is simple.
-
-1.  **Clone the Repository**:
-    ```bash
-    git clone [https://github.com/Rhys-Pounder/HelperApp.git](https://github.com/Rhys-Pounder/HelperApp.git)
-    cd HelperApp
-    ```
-
-2.  **Build the Docker Image**:
-    ```bash
-    docker build -t helperapp-aws-log-helper .
-    ```
-
-3.  **Run the Application**:
-    Execute the provided run script. It will automatically detect your OS and configure the display settings.
-    ```bash
-    ./run-docker.sh
-    ```
-
-The application GUI should now appear on your screen! The `run-docker.sh` script handles all the platform-specific logic for you.
-
-<details>
-<summary>Click to see the contents of <code>run-docker.sh</code></summary>
+The web version runs in Docker and works on any platform without GUI dependencies:
 
 ```bash
-#!/bin/bash
+# Clone the repository
+git clone <repository-url>
+cd HelperApp
 
-# --- OS Detection and Setup ---
-if [ "$(uname)" == "Darwin" ]; then
-    # --- macOS Setup ---
-    echo "macOS detected. Configuring for XQuartz."
-    export DISPLAY=:0
-    IP_ADDRESS=$(ipconfig getifaddr en0)
-    
-    echo "Authorizing IP: $IP_ADDRESS"
-    /opt/X11/bin/xhost + "$IP_ADDRESS"
-    
-    DISPLAY_CONFIG_FOR_CONTAINER="$IP_ADDRESS:0"
-    DOCKER_ARGS="-e DISPLAY=$DISPLAY_CONFIG_FOR_CONTAINER"
+# Start the web application
+./run-docker.sh
 
-elif [ "$(uname)" == "Linux" ]; then
-    # --- Linux Setup ---
-    echo "Linux detected. Configuring for X11."
-    xhost +local:
-    DOCKER_ARGS="-v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY"
-
-else
-    echo "Unsupported OS: $(uname)"
-    exit 1
-fi
-
-# --- Run the Docker Container ---
-echo "Starting Docker container..."
-docker run --rm -it $DOCKER_ARGS helperapp-aws-log-helper
-
-# --- Cleanup ---
-if [ "$(uname)" == "Darwin" ]; then
-    echo "Revoking IP authorization."
-    /opt/X11/bin/xhost - "$IP_ADDRESS"
-elif [ "$(uname)" == "Linux" ]; then
-    xhost -local:
-fi
+# Open your browser to:
+# http://localhost:8080
 ```
-</details>
 
-***
+### Option 2: Desktop GUI Application
 
-## Application Usage Guide
+For native desktop experience with system integration:
 
-The application has three main tabs:
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-#### 1. Log Check Tab
--   Enter the date and time of your check (click "Now" for current time).
--   Select an outcome from the dropdown menu.
--   Add any relevant notes.
--   Click "Save Check" to store the record.
+# Run the desktop application
+python main.py
+```
 
-#### 2. History Tab
--   View all previous check records.
--   Double-click any record to see full details.
--   Click "Refresh" to update the list.
+## 📋 Requirements
 
-#### 3. Settings Tab
--   Start/Stop automatic reminders.
--   Test the reminder system.
--   View application information.
+### Web Version (Docker)
+- Docker installed and running
+- Web browser (Chrome, Firefox, Safari, etc.)
 
-***
+### Desktop Version
+- Python 3.8+
+- tkinter (usually included with Python)
+- customtkinter
+- pyperclip
+- Additional dependencies in `requirements.txt`
 
-## Troubleshooting
+## 🛠️ Installation
 
-#### On macOS: Error `couldn't connect to display` or `Authorization required`
--   **Is XQuartz Running?**: Make sure the XQuartz application is open before you run the script.
--   **Security Settings**: Double-check that **"Allow connections from network clients"** is enabled in XQuartz settings. You may need to restart XQuartz or log out/in again for it to take effect.
--   **Firewall**: Ensure your firewall is not blocking the connection from Docker.
+### Web Version Setup
 
-#### On Linux: Error `cannot open display`
--   **Permissions**: The `xhost +local:` command in the script should handle this, but ensure you are running the script as a user with an active graphical session.
+1. **Install Docker** (if not already installed):
+   - [Docker Desktop for Mac](https://docs.docker.com/desktop/mac/)
+   - [Docker Desktop for Windows](https://docs.docker.com/desktop/windows/)
+   - [Docker for Linux](https://docs.docker.com/engine/install/)
 
-#### Docker Errors
--   **`docker` command not found**: Ensure Docker is installed and its daemon is running. On Linux, you may need to add your user to the `docker` group to run commands without `sudo`.
--   **Image not found**: Make sure you have successfully run the `docker build -t helperapp-aws-log-helper .` command from within the project directory.
+2. **Clone and run**:
+   ```bash
+   git clone <repository-url>
+   cd HelperApp
+   chmod +x run-docker.sh
+   ./run-docker.sh
+   ```
 
-***
+3. **Access the application** at `http://localhost:8080`
 
-## Configuration
+### Desktop Version Setup
 
-Edit `config.py` to customize:
--   Reminder interval (default: 2 hours)
--   Snooze duration (default: 10 minutes)
--   Database location (Note: Data is stored on the host, not in the container).
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd HelperApp
+   ```
 
-<br>
+2. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-<details>
-<summary><h3>Running Locally (Alternative method without Docker)</h3></summary>
+3. **Run the application**:
+   ```bash
+   python main.py
+   ```
 
-### Requirements
-- Python 3.6 or higher
-- `tkinter`
+## 📖 Usage Guide
 
-### Installation
+### Web Application
 
-1.  Clone this repository:
-    ```bash
-    git clone [https://github.com/Rhys-Pounder/HelperApp.git](https://github.com/Rhys-Pounder/HelperApp.git)
-    cd HelperApp
-    ```
+The web interface provides all functionality through a modern browser-based UI:
 
-2.  Ensure tkinter is installed:
-    -   On **Ubuntu/Debian**: `sudo apt update && sudo apt install python3-tk`
-    -   On **macOS**: `tkinter` is typically included with Python installations from python.org.
+1. **Log Check Tab**: Record new log checks with timestamps and outcomes
+2. **History Tab**: View, export, and manage previous checks
+3. **AWS Queries Tab**: Access pre-built queries with copy-to-clipboard functionality
+4. **Evidence Pack Tab**: Generate professional documentation with dynamic sections
 
-3.  Run the application:
-    ```bash
-    python3 main.py
-    ```
-</details>
+### Desktop Application
+
+The desktop version offers the same features with native system integration:
+
+- **System notifications** for reminders
+- **Native file dialogs** for exports and imports
+- **System tray integration** (where supported)
+- **Keyboard shortcuts** and native UI elements
+
+## 🏗️ Application Structure
+
+```
+HelperApp/
+├── main.py                 # Desktop application entry point
+├── web_app.py             # Web application entry point
+├── gui.py                 # Desktop GUI components
+├── database.py            # Database management
+├── reminder.py            # Reminder system
+├── evidence_pack_tab.py   # Evidence pack generator (desktop)
+├── config.py              # Application configuration
+├── requirements.txt       # Python dependencies
+├── Dockerfile             # Docker configuration
+├── run-docker.sh          # Docker runner script
+├── templates/
+│   └── index.html         # Web interface template
+└── data/                  # Database storage directory
+```
+
+## 🔧 Configuration
+
+### Database Configuration
+
+Both versions use SQLite for data storage:
+- **Web version**: `/home/appuser/app/data/` (in container)
+- **Desktop version**: `./data/` (local directory)
+
+### Reminder Settings (Desktop Only)
+
+Configure automatic check reminders in the Settings tab:
+- Enable/disable reminders
+- Set reminder intervals (1-168 hours)
+- Customize reminder messages
+
+## 📊 Evidence Pack Generation
+
+Generate professional evidence documentation with:
+
+### Basic Information
+- Date/time of check
+- Checker name
+- Environment (Production/Staging/Development)
+- AWS account details
+
+### Log Sources
+- CloudWatch Logs
+- CloudTrail
+- Application Logs
+- Security Logs (WAF, GuardDuty, etc.)
+
+### Dynamic Sections
+- **Findings**: Add/remove findings with descriptions
+- **Actions Taken**: Document remediation steps
+- **Follow-up Required**: Track outstanding items with due dates
+- **Screenshots/Evidence**: Reference supporting materials
+
+### Sign-off
+- Checked by
+- Reviewed by
+- Completion date
+
+## 🔍 AWS Query Library
+
+Pre-built queries for common scenarios:
+
+### CloudWatch Insights
+- Error detection patterns
+- Performance monitoring
+- Memory usage analysis
+- Custom log parsing
+
+### AWS CLI Commands
+- CloudTrail failed login detection
+- SSM session history
+- Security event queries
+- Resource utilization checks
+
+## 🐳 Docker Deployment
+
+### Local Development
+```bash
+docker build -t aws-log-helper .
+docker run -p 8080:8080 aws-log-helper
+```
+
+### Production Deployment
+```bash
+# With persistent data storage
+docker run -d \
+  --name aws-log-helper \
+  -p 8080:8080 \
+  -v $(pwd)/data:/home/appuser/app/data \
+  aws-log-helper
+```
+
+### Cloud Deployment
+
+The web version can be deployed to any cloud platform that supports Docker:
+
+- **AWS**: ECS, Fargate, or EC2
+- **Google Cloud**: Cloud Run or GKE
+- **Azure**: Container Instances or AKS
+- **Heroku**: Container registry
+- **DigitalOcean**: App Platform
+
+## 📤 Data Export
+
+### Export Formats
+- **CSV**: Full history export for analysis
+- **Evidence Packs**: Formatted documentation ready for sharing
+- **Database Backup**: Complete data backup for migration
+
+### Export Options
+- **Web version**: Download through browser
+- **Desktop version**: Save to local filesystem
+
+## 🔒 Security
+
+### Web Application
+- Non-root user execution in container
+- No network access to host system
+- Isolated data storage
+- Input validation and sanitization
+
+### Desktop Application
+- Local data storage only
+- No network communications (except for updates)
+- User-controlled data access
+
+## 🛠️ Development
+
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test both web and desktop versions
+5. Submit a pull request
+
+### Running Tests
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run tests
+python -m pytest tests/
+```
+
+### Building Executables
+
+For desktop distribution:
+```bash
+# Install PyInstaller
+pip install pyinstaller
+
+# Build executable
+pyinstaller --windowed --onefile main.py
+```
+
+## 📝 Changelog
+
+### Version 2.0.0
+- Added cross-platform web interface
+- Docker containerization
+- Improved evidence pack generation
+- Enhanced UI with modern dark theme
+- Better mousewheel scrolling support
+
+### Version 1.0.0
+- Initial desktop GUI release
+- Basic log tracking functionality
+- Evidence pack generation
+- AWS query library
+
+## 🆘 Troubleshooting
+
+### Web Version Issues
+- **Can't access localhost:8080**: Ensure Docker is running and port is not in use
+- **Container won't start**: Check Docker logs with `docker logs <container-id>`
+- **Data persistence**: Ensure proper volume mounting for data directory
+
+### Desktop Version Issues
+- **Import errors**: Install missing dependencies with `pip install -r requirements.txt`
+- **GUI not showing**: Ensure tkinter is installed and DISPLAY is set (Linux)
+- **macOS button visibility**: Update to latest version with improved button styling
+
+### Common Issues
+- **Database errors**: Check file permissions in data directory
+- **Performance issues**: Consider cleaning old records or increasing system resources
+
+## 📞 Support
+
+For issues and questions:
+1. Check the troubleshooting section above
+2. Review existing GitHub issues
+3. Create a new issue with detailed information
+4. Include logs and system information
+
+## 📄 License
+
+[Specify your license here]
+
+## 🙏 Acknowledgments
+
+- Built with Python and modern web technologies
+- Uses CustomTkinter for enhanced desktop UI
+- Flask for web application framework
+- Docker for cross-platform deployment
