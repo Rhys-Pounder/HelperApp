@@ -1,34 +1,33 @@
+# Use Python 3.11 slim image for smaller size
 FROM python:3.11-slim
 
-# Install system dependencies for tkinter and X11
-RUN apt-get update && apt-get install -y \
-    python3-tk \
-    x11-apps \
-    xauth \
-    && rm -rf /var/lib/apt/lists/*
-
 # Set working directory
-WORKDIR /app
+WORKDIR /home/appuser/app
+
+# Create non-root user for security
+RUN useradd -m appuser && chown -R appuser:appuser /home/appuser
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Flask for web interface
+RUN pip install --no-cache-dir flask
 
 # Copy application files
-COPY . .
+COPY *.py ./
+COPY templates/ ./templates/
 
-# Create data directory
-RUN mkdir -p /root/.aws_log_helper
-
-# Set environment variables for GUI
-ENV DISPLAY=:0
-ENV PYTHONPATH=/app
-
-# Create a non-root user (optional, but recommended)
-RUN useradd -m -s /bin/bash appuser && \
-    mkdir -p /home/appuser/.aws_log_helper && \
-    chown -R appuser:appuser /home/appuser
+# Create data directory for database
+RUN mkdir -p data && chown -R appuser:appuser data
 
 # Switch to non-root user
 USER appuser
-WORKDIR /home/appuser/app
-COPY --chown=appuser:appuser . .
 
-# Expose the application
-CMD ["python3", "main.py"]
+# Expose port 8080
+EXPOSE 8080
+
+# Run the web application
+CMD ["python", "web_app.py"]
